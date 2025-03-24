@@ -301,392 +301,325 @@ const Browse = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero section with search */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 py-8 md:py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-5xl font-bold text-center text-white mb-6">Browse Items</h1>
-          <div className="relative max-w-2xl mx-auto">
-            <input
-              type="text"
-              placeholder="Search for items..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full py-3 px-4 pl-12 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
-          </div>
+      <div className="bg-gradient-to-r from-green-700 to-green-600 py-12 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -left-40 w-80 h-80 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+          <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
         </div>
-      </div>
-
-      {/* Main content */}
-      <div className="container mx-auto px-4 py-6 md:py-8">
-        {/* Category tabs */}
-        <div className="flex overflow-x-auto pb-2 mb-4 md:mb-6 scrollbar-hide">
-          <button
-            onClick={() => handleCategoryChange('All')}
-            className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-full whitespace-nowrap mr-2 ${
-              selectedCategory === 'All'
-                ? 'bg-green-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100'
-            }`}
-          >
-            All Categories
-          </button>
-          {realCategories.filter(cat => cat !== 'All').map((cat) => (
-            <button
-              key={cat}
-              onClick={() => handleCategoryChange(cat)}
-              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-full whitespace-nowrap mr-2 ${
-                selectedCategory === cat
-                  ? 'bg-green-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Filters and results */}
-        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-          {/* Filters sidebar */}
-          <div className="w-full md:w-64 flex-shrink-0">
-            <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-medium text-lg">Filters</h3>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="md:hidden text-gray-500"
-                >
-                  <ChevronDown
-                    size={20}
-                    className={`transform transition-transform ${
-                      showFilters ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-              </div>
-
-              <div className={`${showFilters ? 'block' : 'hidden md:block'}`}>
-                {/* Distance filter */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Maximum Distance: {maxDistance} miles
-                  </label>
-                  <input
-                    type="range"
-                    min="1"
-                    max="20"
-                    value={maxDistance}
-                    onChange={(e) => setMaxDistance(parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>1 mile</span>
-                    <span>20 miles</span>
-                  </div>
-                </div>
-
-                {/* Price range filter */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Price Range: ${priceRange[0]} - ${priceRange[1]}
-                  </label>
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="number"
-                      min="0"
-                      max={priceRange[1]}
-                      value={priceRange[0]}
-                      onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-                      className="w-20 p-2 border rounded-md"
-                    />
-                    <span>to</span>
-                    <input
-                      type="number"
-                      min={priceRange[0]}
-                      max="100"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                      className="w-20 p-2 border rounded-md"
-                    />
-                  </div>
-                </div>
-
-                {/* More filters can be added here */}
-              </div>
-            </div>
-          </div>
-
-          {/* Results grid */}
-          <div className="flex-grow">
-            <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
-              <p className="text-gray-600">
-                {loading ? 'Loading...' : `${filteredProducts.length} items found`}
-              </p>
-              <div className="flex items-center">
-                <label className="mr-2 text-sm text-gray-600">Sort by:</label>
-                <select className="border rounded-md p-2 text-sm">
-                  <option>Relevance</option>
-                  <option>Price: Low to High</option>
-                  <option>Price: High to Low</option>
-                  <option>Distance: Nearest</option>
-                  <option>Rating: Highest</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Loading state */}
-            {loading && (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-              </div>
-            )}
-
-            {/* Error state */}
-            {!loading && error && (
-              <div className="text-center p-8 bg-red-50 rounded-lg">
-                <p className="text-red-500">{error}</p>
-                <button 
-                  className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-                  onClick={() => window.location.reload()}
-                >
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {/* Empty state */}
-            {!loading && !error && filteredProducts.length === 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-                <p className="text-gray-500 mb-4">No items found matching your criteria.</p>
-                <button 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategory('All');
-                    setMaxDistance(10);
-                    setPriceRange([0, 100]);
-                  }}
-                  className="text-green-600 font-medium hover:underline"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            )}
-
-            {/* Results grid */}
-            {!loading && !error && filteredProducts.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                {filteredProducts.map((product) => (
-                  <div 
-                    key={product.id} 
-                    className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer relative"
-                    onClick={() => openProductDetail(product)}
-                  >
-                    {/* Add delete button for user's own listings */}
-                    {user && user.id && product.seller.id && (user.id === product.seller.id) && (
-                      <button
-                        className="absolute top-2 right-2 z-10 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors"
-                        onClick={(e) => openDeleteConfirmation(e, product.id)}
-                        disabled={isDeleting && deletingItemId === product.id}
-                      >
-                        {isDeleting && deletingItemId === product.id ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Trash2 size={18} />
-                        )}
-                      </button>
-                    )}
-                    
-                    <div className="h-40 sm:h-48 overflow-hidden relative">
-                      <img 
-                        src={product.images && product.images.length > 0 ? product.images[0] : ''}
-                        alt={product.title} 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          // Category-specific fallback images
-                          const fallbacks = {
-                            "Tools": "https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                            "Outdoor": "https://images.unsplash.com/photo-1532339142463-fd0a8979791a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                            "Electronics": "https://images.unsplash.com/photo-1550009158-9ebf69173e03?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                            "Home & Garden": "https://images.unsplash.com/photo-1556911220-bda9f7f7597e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-                          };
-                          e.currentTarget.src = fallbacks[product.category] || "https://via.placeholder.com/400x300?text=No+Image";
-                          e.currentTarget.onerror = null;
-                        }}
-                      />
-                      
-                      <div className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm rounded-full px-2 py-1 text-xs font-medium text-gray-700">
-                        {product.category}
-                      </div>
-                      
-                      {product.listingType === 'sell' && (
-                        <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 text-xs font-medium rounded-full">
-                          For Sale
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="p-3 sm:p-4">
-                      <h3 className="font-medium text-base sm:text-lg mb-1 line-clamp-1">{product.title}</h3>
-                      <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">{product.description}</p>
-                      
-                      <div className="flex justify-between items-center mb-2 sm:mb-3">
-                        <div className="flex items-center text-green-600 font-medium">
-                          <DollarSign size={14} className="mr-1" />
-                          <span>{product.price}</span>
-                          <span className="text-gray-500 font-normal ml-1 text-xs sm:text-sm">/{product.rentalPeriod}</span>
-                        </div>
-                        <div className="flex items-center text-amber-500">
-                          <Star size={14} className="mr-1" fill="currentColor" />
-                          <span>{product.rating}</span>
-                          <span className="text-gray-500 text-xs ml-1">({product.reviews})</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-between text-xs sm:text-sm text-gray-500">
-                        <div className="flex items-center">
-                          <MapPin size={12} className="mr-1" />
-                          <span>{product.distance} miles</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock size={12} className="mr-1" />
-                          <span>Available Now</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Product detail modal */}
-      {selectedProduct && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white z-10 flex justify-between items-center p-3 sm:p-4 border-b">
-              <h2 className="text-lg sm:text-xl font-bold truncate pr-2">{selectedProduct.title}</h2>
-              <button 
-                onClick={closeProductDetail}
-                className="p-1 rounded-full hover:bg-gray-100 flex-shrink-0"
-              >
-                <X size={24} />
-              </button>
-            </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-2xl mx-auto text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-4">Find what you need</h1>
+            <p className="text-green-100 text-xl mb-8">
+              Browse thousands of items available to rent or buy from your community
+            </p>
             
-            <div className="p-3 sm:p-6">
-              {/* Image gallery */}
-              <div className="mb-4 sm:mb-6">
-                <div className="aspect-video rounded-lg overflow-hidden mb-2">
-                  <img 
-                    src={selectedProduct.images[0]} 
-                    alt={selectedProduct.title} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                  {selectedProduct.images.map((image, index) => (
-                    <div 
-                      key={index}
-                      className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-md overflow-hidden border-2 border-green-600 cursor-pointer"
-                    >
-                      <img 
-                        src={image} 
-                        alt={`${selectedProduct.title} - image ${index + 1}`} 
-                        className="w-full h-full object-cover"
+            {/* Search form */}
+            <div className="max-w-xl mx-auto">
+              <div className="flex bg-white rounded-lg shadow-lg p-1 overflow-hidden">
+                <input
+                  type="text"
+                  placeholder="Search for anything..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-grow px-4 py-3 focus:outline-none"
+                />
+                <button
+                  className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white px-6 py-3 rounded-md flex items-center transition-all font-medium shadow-md"
+                  onClick={fetchProducts}
+                >
+                  <Search size={18} className="mr-2" />
+                  Search
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main content */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex flex-col lg:flex-row">
+          {/* Filters sidebar */}
+          <div className="lg:w-64 mb-8 lg:mb-0 lg:mr-8">
+            <div className="bg-white rounded-xl shadow-md p-6 sticky top-20">
+              <h2 className="text-lg font-semibold mb-4 flex items-center">
+                <Filter size={20} className="mr-2 text-green-600" />
+                Filters
+              </h2>
+              
+              {/* Category filter */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-3 text-gray-700">Category</h3>
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="category"
+                      value="all"
+                      checked={selectedCategory === 'all'}
+                      onChange={() => handleCategoryChange('all')}
+                      className="form-radio h-4 w-4 text-green-600"
+                    />
+                    <span className="ml-2 text-gray-700">All Categories</span>
+                  </label>
+                  
+                  {categories.map(category => (
+                    <label key={category} className="flex items-center">
+                      <input
+                        type="radio"
+                        name="category"
+                        value={category}
+                        checked={selectedCategory === category}
+                        onChange={() => handleCategoryChange(category)}
+                        className="form-radio h-4 w-4 text-green-600"
                       />
-                    </div>
+                      <span className="ml-2 text-gray-700">{category}</span>
+                    </label>
                   ))}
                 </div>
               </div>
-              
-              {/* Product details */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <div className="md:col-span-2">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-4">
-                    <div className="flex items-center text-amber-500">
-                      <Star size={18} className="mr-1" fill="currentColor" />
-                      <span className="font-medium">{selectedProduct.rating}</span>
-                      <span className="text-gray-500 ml-1">({selectedProduct.reviews} reviews)</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <MapPin size={18} className="mr-1" />
-                      <span className="text-sm">{selectedProduct.location} ({selectedProduct.distance} miles away)</span>
-                    </div>
+
+              {/* Price range filter */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-3 text-gray-700">Price Range</h3>
+                <div className="flex items-center">
+                  <div className="flex-1 mr-2">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                      value={priceRange.min}
+                      onChange={(e) => setPriceRange({...priceRange, min: Number(e.target.value)})}
+                    />
                   </div>
-                  
-                  <div className="mb-4 sm:mb-6">
-                    <h4 className="font-medium mb-2">Description</h4>
-                    <p className="text-gray-700 text-sm sm:text-base">{selectedProduct.description}</p>
-                  </div>
-                  
-                  <div className="mb-4 sm:mb-6">
-                    <h4 className="font-medium mb-2">Features</h4>
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {selectedProduct.features && selectedProduct.features.map((feature, index) => (
-                        <li key={index} className="flex items-center text-gray-700 text-sm">
-                          <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-2">Condition</h4>
-                    <div className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-                      {selectedProduct.condition}
-                    </div>
+                  <span className="text-gray-500 mx-1">-</span>
+                  <div className="flex-1 ml-2">
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                      value={priceRange.max}
+                      onChange={(e) => setPriceRange({...priceRange, max: Number(e.target.value)})}
+                    />
                   </div>
                 </div>
-                
-                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-                  <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
-                    ${selectedProduct.price}<span className="text-gray-500 text-sm sm:text-base font-normal">/{selectedProduct.rentalPeriod}</span>
+              </div>
+
+              {/* Distance filter */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-3 text-gray-700">Maximum Distance</h3>
+                <div className="flex items-center">
+                  <input
+                    type="range"
+                    min="1"
+                    max="50"
+                    value={maxDistance}
+                    onChange={(e) => setMaxDistance(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
+                  />
+                  <span className="ml-2 min-w-[40px] text-gray-700">{maxDistance} mi</span>
+                </div>
+              </div>
+
+              {/* Listing type filter */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-3 text-gray-700">Listing Type</h3>
+                <div className="space-y-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategory === 'rent'}
+                      onChange={() => handleCategoryChange('rent')}
+                      className="form-checkbox h-4 w-4 text-green-600 rounded"
+                    />
+                    <span className="ml-2 text-gray-700">For Rent</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedCategory === 'buy'}
+                      onChange={() => handleCategoryChange('buy')}
+                      className="form-checkbox h-4 w-4 text-green-600 rounded"
+                    />
+                    <span className="ml-2 text-gray-700">For Sale</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Apply filters button */}
+              <button
+                onClick={fetchProducts}
+                className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all font-medium"
+              >
+                Apply Filters
+              </button>
+              
+              {/* Clear filters button */}
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategory('All');
+                  setMaxDistance(10);
+                  setPriceRange([0, 100]);
+                }}
+                className="w-full mt-2 bg-white text-gray-700 py-2 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors font-medium flex items-center justify-center"
+              >
+                <X size={16} className="mr-2" />
+                Clear Filters
+              </button>
+            </div>
+          </div>
+          
+          {/* Products grid */}
+          <div className="flex-1">
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+              </div>
+            ) : error ? (
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
                   </div>
-                  
-                  <div className="border-t border-b py-3 sm:py-4 my-3 sm:my-4">
-                    <div className="flex items-center mb-3">
-                      <img 
-                        src={selectedProduct.seller.image} 
-                        alt={selectedProduct.seller.name} 
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-3"
-                      />
-                      <div>
-                        <div className="font-medium">{selectedProduct.seller.name}</div>
-                        <div className="flex items-center text-xs sm:text-sm">
-                          <Star size={12} className="text-amber-500 mr-1" fill="currentColor" />
-                          <span>{selectedProduct.seller.rating}</span>
-                          {selectedProduct.seller.verified && (
-                            <span className="ml-2 text-green-600 text-xs font-medium">Verified</span>
-                          )}
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="bg-white rounded-xl shadow-md p-8 text-center">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Try clearing some filters or changing your search query.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {products.length} {products.length === 1 ? 'Item' : 'Items'} Found
+                  </h2>
+                  <div className="flex items-center">
+                    <label className="text-sm text-gray-700 mr-2">Sort by:</label>
+                    <select
+                      className="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                      value={selectedCategory}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
+                    >
+                      <option value="All">Relevance</option>
+                      <option value="rent">Price: Low to High</option>
+                      <option value="buy">Price: High to Low</option>
+                      <option value="All">Distance: Nearest</option>
+                      <option value="All">Rating: Highest</option>
+                    </select>
+                  </div>
+                </div>
+              
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {products.map(product => (
+                    <div 
+                      key={product.id} 
+                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group"
+                    >
+                      {/* Product image */}
+                      <div 
+                        className="h-48 bg-gray-200 relative cursor-pointer"
+                        onClick={() => openProductDetail(product)}
+                      >
+                        {product.images && product.images.length > 0 ? (
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.title} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                            No Image
+                          </div>
+                        )}
+                        
+                        {/* Listing type badge */}
+                        <div className="absolute top-2 left-2">
+                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                            product.listingType === 'rent' 
+                              ? 'bg-blue-500 text-white' 
+                              : 'bg-green-500 text-white'
+                          }`}>
+                            {product.listingType === 'rent' ? 'Rental' : 'For Sale'}
+                          </span>
+                        </div>
+                        
+                        {/* Delete button for user's own listings */}
+                        {product.seller.id === (user?.id || '') && (
+                          <button
+                            onClick={(e) => openDeleteConfirmation(e, product.id)}
+                            className="absolute top-2 right-2 bg-white/80 hover:bg-white p-1.5 rounded-full text-red-500 hover:text-red-600 transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Product info */}
+                      <div className="p-5 cursor-pointer" onClick={() => openProductDetail(product)}>
+                        <h3 className="font-semibold text-lg mb-1 text-gray-800 line-clamp-1">{product.title}</h3>
+                        
+                        <div className="mb-3 flex items-center">
+                          <span className="flex items-center text-amber-500 mr-1">
+                            <Star size={16} className="fill-amber-500" />
+                            <span className="ml-1 text-sm font-medium">{product.rating.toFixed(1)}</span>
+                          </span>
+                          <span className="text-gray-500 text-sm">({product.reviews} reviews)</span>
+                        </div>
+                        
+                        <p className="text-gray-500 text-sm line-clamp-2 mb-3">{product.description}</p>
+                        
+                        <div className="flex items-center text-sm text-gray-500 mb-3">
+                          <MapPin size={16} className="mr-1 text-gray-400" />
+                          <span>{product.location} ({product.distance} mi away)</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="font-bold text-green-600">
+                            ${product.price.toFixed(2)} 
+                            {product.listingType === 'rent' && (
+                              <span className="text-sm font-normal text-gray-500">
+                                /{product.rentalPeriod}
+                              </span>
+                            )}
+                          </div>
+                          
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openProductDetail(product);
+                            }}
+                            className="text-green-600 hover:text-green-700 font-medium text-sm"
+                          >
+                            View Details
+                          </button>
                         </div>
                       </div>
                     </div>
-                    <button className="w-full text-green-600 border border-green-600 py-2 rounded-lg font-medium hover:bg-green-50 text-sm sm:text-base">
-                      View Profile
-                    </button>
-                  </div>
-                  
-                  <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-3 rounded-lg font-medium mb-2 sm:mb-3 text-sm sm:text-base">
-                    {selectedProduct.listingType === 'rent' ? 'Rent Now' : 'Buy Now'}
-                  </button>
-                  <button className="w-full border py-2 sm:py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 text-sm sm:text-base">
-                    Message
-                  </button>
+                  ))}
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
-      )}
-
-      {/* Confirmation Dialog for Delete */}
-      <ConfirmationDialog
+      </div>
+      
+      {/* Delete confirmation dialog */}
+      <ConfirmationDialog 
         isOpen={showConfirmDialog}
-        title={deleteSuccess ? "Success!" : "Delete Listing"}
+        title="Delete Listing"
         message={
           deleteSuccess 
             ? "Your listing has been successfully deleted." 
@@ -694,12 +627,182 @@ const Browse = () => {
               ? `Error: ${deleteError}` 
               : "Are you sure you want to delete this listing? This action cannot be undone."
         }
-        confirmText={deleteSuccess ? "OK" : "Delete"}
-        cancelText="Cancel"
+        confirmLabel={deleteSuccess ? "OK" : "Delete"}
+        cancelLabel="Cancel"
         onConfirm={deleteSuccess ? closeDeleteConfirmation : confirmDeleteListing}
         onCancel={closeDeleteConfirmation}
-        isLoading={isDeleting}
       />
+      
+      {/* Product detail dialog */}
+      {selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-xl font-semibold text-gray-800">{selectedProduct.title}</h2>
+              <button 
+                onClick={closeProductDetail}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Product images */}
+                <div>
+                  {selectedProduct.images && selectedProduct.images.length > 0 ? (
+                    <div className="mb-4">
+                      <img 
+                        src={selectedProduct.images[0]} 
+                        alt={selectedProduct.title} 
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                      
+                      {selectedProduct.images.length > 1 && (
+                        <div className="grid grid-cols-4 gap-2 mt-2">
+                          {selectedProduct.images.slice(1).map((image, index) => (
+                            <img 
+                              key={index} 
+                              src={image} 
+                              alt={`${selectedProduct.title} - ${index+1}`} 
+                              className="h-20 w-full object-cover rounded-md"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full h-64 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg">
+                      No Image
+                    </div>
+                  )}
+                </div>
+                
+                {/* Product details */}
+                <div>
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-bold text-2xl text-gray-800">{selectedProduct.title}</h3>
+                      <div className="flex items-center mt-1">
+                        <span className="flex items-center text-amber-500">
+                          <Star size={18} className="fill-amber-500" />
+                          <span className="ml-1 font-medium">{selectedProduct.rating.toFixed(1)}</span>
+                        </span>
+                        <span className="text-gray-500 ml-1">({selectedProduct.reviews} reviews)</span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-green-600">
+                        ${selectedProduct.price.toFixed(2)}
+                      </div>
+                      {selectedProduct.listingType === 'rent' && (
+                        <div className="text-sm text-gray-500">
+                          per {selectedProduct.rentalPeriod}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <h4 className="font-medium text-gray-800 mb-2">Description</h4>
+                    <p className="text-gray-700">{selectedProduct.description}</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                      <h4 className="font-medium text-gray-800 mb-2">Details</h4>
+                      <ul className="space-y-2">
+                        <li className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-24">Category:</span>
+                          <span className="text-gray-600">{selectedProduct.category}</span>
+                        </li>
+                        <li className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-24">Condition:</span>
+                          <span className="text-gray-600">{selectedProduct.condition}</span>
+                        </li>
+                        <li className="flex items-center text-sm">
+                          <span className="font-medium text-gray-700 w-24">Listing Type:</span>
+                          <span className="text-gray-600">
+                            {selectedProduct.listingType === 'rent' ? 'For Rent' : 'For Sale'}
+                          </span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-medium text-gray-800 mb-2">Location</h4>
+                      <ul className="space-y-2">
+                        <li className="flex items-start text-sm">
+                          <MapPin size={16} className="mr-2 mt-0.5 text-gray-400 flex-shrink-0" />
+                          <span className="text-gray-600">{selectedProduct.location}</span>
+                        </li>
+                        <li className="flex items-center text-sm">
+                          <Clock size={16} className="mr-2 text-gray-400 flex-shrink-0" />
+                          <span className="text-gray-600">{selectedProduct.distance} miles away</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <h4 className="font-medium text-gray-800 mb-2">Seller Information</h4>
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                        {selectedProduct.seller.image ? (
+                          <img 
+                            src={selectedProduct.seller.image} 
+                            alt={selectedProduct.seller.name} 
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-gray-300 text-gray-600 font-medium">
+                            {selectedProduct.seller.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-800">
+                          {selectedProduct.seller.name}
+                          {selectedProduct.seller.verified && (
+                            <span className="ml-1 text-blue-500 text-sm">(Verified)</span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {selectedProduct.seller.rating.toFixed(1)} seller rating
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    {/* Contact buttons */}
+                    <button
+                      className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center justify-center"
+                    >
+                      Contact Seller
+                    </button>
+                    
+                    {selectedProduct.listingType === 'rent' ? (
+                      <button 
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center justify-center"
+                      >
+                        Request Rental
+                      </button>
+                    ) : (
+                      <button 
+                        className="flex-1 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center justify-center"
+                      >
+                        Buy Now
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

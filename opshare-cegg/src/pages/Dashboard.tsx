@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useUser } from '../contexts/UserContext';
-import { ShoppingBag, Package, Clock, CheckCircle, AlertCircle, Plus } from 'lucide-react';
+import { ShoppingBag, Package, Clock, CheckCircle, AlertCircle, Plus, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -93,109 +93,168 @@ const Dashboard = () => {
     }
   };
 
+  // Calculate stats
+  const completedMissions = missions.filter(m => m.completed).length;
+  const totalMissions = missions.length;
+  const missionCompletionPercentage = Math.round((completedMissions / totalMissions) * 100);
+  
+  const recentTransactions = transactions.slice(0, 5);
+
   return (
-    <div className="bg-gray-50 min-h-screen pb-12">
+    <div className="min-h-screen bg-gray-50 py-8">
       {/* Dashboard header */}
-      <div className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Welcome, {user?.name || 'User'}!
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Manage your listings and transactions
-              </p>
-            </div>
-            <div className="mt-4 md:mt-0">
-              <Link 
-                to="/dashboard/sell" 
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Plus size={18} className="mr-2" />
-                List New Item
-              </Link>
+      <div className="relative bg-gradient-to-r from-green-700 to-green-600 pb-5 mb-6 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -left-40 w-80 h-80 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+          <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="pt-8 pb-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+              <div>
+                <h1 className="text-3xl font-bold text-white mb-2">Dashboard</h1>
+                <p className="text-green-100">
+                  Welcome back, {user?.name || 'User'}! Track your items, performance, and impact.
+                </p>
+              </div>
+              
+              <div className="mt-4 md:mt-0 flex space-x-3">
+                <Link to="/sell">
+                  <Button className="bg-white text-green-700 hover:bg-green-50 shadow-md flex items-center">
+                    <Plus size={16} className="mr-2" />
+                    List New Item
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Dashboard content */}
-      <div className="container mx-auto px-4 py-8">
-        {/* Stats overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100 text-green-600 mr-4">
-                <ShoppingBag size={24} />
+      
+      <div className="container mx-auto px-4">
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 -mt-10">
+          {/* LeafPoints Card */}
+          <Card className="bg-white shadow-xl border-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-50 to-white rounded-xl z-0"></div>
+            <CardContent className="p-6 relative z-10">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Leaf Balance</p>
+                  <h3 className="text-3xl font-bold text-gray-900">{leafs}</h3>
+                  <p className="text-sm text-gray-500 mt-1">Earn by completing missions</p>
+                </div>
+                <div className="h-12 w-12 bg-gradient-to-br from-green-500 to-green-400 rounded-full shadow-md flex items-center justify-center text-white">
+                  <Leaf className="h-6 w-6" />
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Listings</p>
-                <p className="text-2xl font-bold">{financialData.totalRentals}</p>
+              <div className="mt-4">
+                <button 
+                  onClick={() => convertLeafsToTreeCoins(100)}
+                  disabled={leafs < 100}
+                  className="text-sm font-medium text-green-600 hover:text-green-700 flex items-center"
+                >
+                  Convert to TreeCoins 
+                  <TrendingUp className="h-3 w-3 ml-1" />
+                </button>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
-                <Package size={24} />
+          {/* TreeCoins Card */}
+          <Card className="bg-white shadow-xl border-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-white rounded-xl z-0"></div>
+            <CardContent className="p-6 relative z-10">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-1">TreeCoins</p>
+                  <h3 className="text-3xl font-bold text-gray-900">{treeCoins.toFixed(2)}</h3>
+                  <p className="text-sm text-gray-500 mt-1">Digital currency for the platform</p>
+                </div>
+                <div className="h-12 w-12 bg-gradient-to-br from-amber-500 to-amber-400 rounded-full shadow-md flex items-center justify-center text-white">
+                  <Coins className="h-6 w-6" />
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Active Listings</p>
-                <p className="text-2xl font-bold">{financialData.totalRentals - financialData.completedTransactions}</p>
+              <div className="mt-4">
+                <Link to="/transactions" className="text-sm font-medium text-amber-600 hover:text-amber-700 flex items-center">
+                  View Transactions
+                  <ArrowRight className="h-3 w-3 ml-1" />
+                </Link>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4">
-                <Clock size={24} />
+          {/* Eco Score Card */}
+          <Card className="bg-white shadow-xl border-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-white rounded-xl z-0"></div>
+            <CardContent className="p-6 relative z-10">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Eco Score</p>
+                  <h3 className="text-3xl font-bold text-gray-900">{ecoScore}</h3>
+                  <p className="text-sm text-gray-500 mt-1">Level {ecoLevel} Eco User</p>
+                </div>
+                <div className="h-12 w-12 bg-gradient-to-br from-blue-500 to-blue-400 rounded-full shadow-md flex items-center justify-center text-white">
+                  <Award className="h-6 w-6" />
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Completed Transactions</p>
-                <p className="text-2xl font-bold">{financialData.completedTransactions}</p>
+              <div className="mt-4">
+                <div className="w-full bg-gray-100 rounded-full h-2.5">
+                  <div 
+                    className="bg-gradient-to-r from-blue-400 to-blue-600 h-2.5 rounded-full" 
+                    style={{ width: `${(ecoScore / maxEcoScore) * 100}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 text-right">{Math.round((ecoScore / maxEcoScore) * 100)}% to next level</p>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-full bg-purple-100 text-purple-600 mr-4">
-                <CheckCircle size={24} />
+          {/* Missions Card */}
+          <Card className="bg-white shadow-xl border-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-white rounded-xl z-0"></div>
+            <CardContent className="p-6 relative z-10">
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 mb-1">Missions</p>
+                  <h3 className="text-3xl font-bold text-gray-900">{completedMissions}/{totalMissions}</h3>
+                  <p className="text-sm text-gray-500 mt-1">Completed</p>
+                </div>
+                <div className="h-12 w-12 bg-gradient-to-br from-purple-500 to-purple-400 rounded-full shadow-md flex items-center justify-center text-white">
+                  <ListChecks className="h-6 w-6" />
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-2xl font-bold">${financialData.earnings.toFixed(2)}</p>
+              <div className="mt-4">
+                <div className="w-full bg-gray-100 rounded-full h-2.5">
+                  <div 
+                    className="bg-gradient-to-r from-purple-400 to-purple-600 h-2.5 rounded-full" 
+                    style={{ width: `${missionCompletionPercentage}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-gray-500">{missionCompletionPercentage}% complete</p>
+                  <Link to="/missions" className="text-xs text-purple-600 hover:text-purple-700">View All</Link>
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
         
-        {/* Tabs for different listing statuses */}
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger 
-              value="overview" 
-              onClick={() => setActiveTab('overview')}
-              className={`px-4 py-2 ${activeTab === 'overview' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'} rounded-md mr-2`}
-            >
+        {/* Keep the rest of the original dashboard UI below */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList className="bg-white rounded-lg shadow-sm p-1">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700 rounded-md">
               Overview
             </TabsTrigger>
-            <TabsTrigger 
-              value="missions" 
-              onClick={() => setActiveTab('missions')}
-              className={`px-4 py-2 ${activeTab === 'missions' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'} rounded-md mr-2`}
-            >
-              Missions
+            <TabsTrigger value="listings" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700 rounded-md">
+              Your Listings
             </TabsTrigger>
-            <TabsTrigger 
-              value="earnings" 
-              onClick={() => setActiveTab('earnings')}
-              className={`px-4 py-2 ${activeTab === 'earnings' ? 'bg-green-600 text-white' : 'bg-white text-gray-700'} rounded-md`}
-            >
-              Earnings
+            <TabsTrigger value="rentals" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700 rounded-md">
+              Your Rentals
+            </TabsTrigger>
+            <TabsTrigger value="impact" className="data-[state=active]:bg-green-50 data-[state=active]:text-green-700 rounded-md">
+              Impact
             </TabsTrigger>
           </TabsList>
           

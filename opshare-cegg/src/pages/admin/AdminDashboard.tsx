@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -115,18 +115,18 @@ const AdminDashboard: React.FC = () => {
   return (
     <AdminLayout>
       {/* Horizontal Navigation */}
-      <div className="flex flex-wrap gap-3 mb-8 border-b pb-4 px-2 overflow-x-auto">
+      <div className="flex flex-wrap gap-3 mb-8 border-b pb-4 pt-1 px-2 overflow-x-auto sticky top-0 z-10 bg-gray-50">
         {navItems.map(item => (
           <button
             key={item.id}
-            className={`flex items-center px-4 py-2.5 rounded-md transition-colors ${
+            className={`flex items-center px-4 py-2.5 rounded-md transition-all duration-200 ${
               activeTab === item.id 
-                ? 'bg-green-100 text-green-700 font-medium' 
-                : 'text-gray-600 hover:bg-gray-100'
+                ? 'bg-gradient-to-r from-green-600/90 to-green-500/90 text-white font-medium shadow-md' 
+                : 'text-gray-600 hover:bg-gray-100/80 hover:text-gray-900'
             }`}
             onClick={() => setActiveTab(item.id)}
           >
-            <span className="mr-2.5">{item.icon}</span>
+            <span className={`mr-2.5 ${activeTab === item.id ? 'text-white' : 'text-gray-500'}`}>{item.icon}</span>
             <span>{item.label}</span>
           </button>
         ))}
@@ -136,100 +136,138 @@ const AdminDashboard: React.FC = () => {
       {activeTab === 'dashboard' && (
         <div className="space-y-6 px-2 md:px-0">
           <div>
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Admin Dashboard</h1>
             <p className="text-gray-600 mt-1">Welcome to the OpShare admin panel. Here's an overview of what's happening on the platform.</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            <Card className="overflow-hidden">
-              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                <Users className="h-4 w-4 text-gray-500" />
+            <Card className="overflow-hidden border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
+              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0 bg-gradient-to-br from-blue-50 to-indigo-50">
+                <CardTitle className="text-sm font-medium text-blue-900">Total Users</CardTitle>
+                <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Users className="h-4 w-4 text-blue-600" />
+                </div>
               </CardHeader>
-              <CardContent className="px-5 pb-5">
+              <CardContent className="px-5 pb-5 pt-3">
                 <div className="text-2xl font-bold">{stats.totalUsers}</div>
-                <p className="text-xs text-gray-500">Registered users on the platform</p>
+                <div className="flex items-center mt-1">
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mr-2">
+                    <div className="bg-blue-600 h-1.5 rounded-full w-3/4"></div>
+                  </div>
+                  <p className="text-xs text-gray-500">+12% this month</p>
+                </div>
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden">
-              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm font-medium">Active Listings</CardTitle>
-                <ShoppingBag className="h-4 w-4 text-gray-500" />
+            <Card className="overflow-hidden border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
+              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0 bg-gradient-to-br from-indigo-50 to-purple-50">
+                <CardTitle className="text-sm font-medium text-indigo-900">Active Listings</CardTitle>
+                <div className="h-8 w-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                  <ShoppingBag className="h-4 w-4 text-indigo-600" />
+                </div>
               </CardHeader>
-              <CardContent className="px-5 pb-5">
+              <CardContent className="px-5 pb-5 pt-3">
                 <div className="text-2xl font-bold">{stats.activeListings}</div>
-                <p className="text-xs text-gray-500">Current active listings</p>
+                <div className="flex items-center mt-1">
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mr-2">
+                    <div className="bg-indigo-600 h-1.5 rounded-full w-2/3"></div>
+                  </div>
+                  <p className="text-xs text-gray-500">+8% this month</p>
+                </div>
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden">
-              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm font-medium">Platform Revenue</CardTitle>
-                <DollarSign className="h-4 w-4 text-gray-500" />
+            <Card className="overflow-hidden border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
+              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0 bg-gradient-to-br from-green-50 to-emerald-50">
+                <CardTitle className="text-sm font-medium text-green-900">Platform Revenue</CardTitle>
+                <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <DollarSign className="h-4 w-4 text-green-600" />
+                </div>
               </CardHeader>
-              <CardContent className="px-5 pb-5">
+              <CardContent className="px-5 pb-5 pt-3">
                 <div className="text-2xl font-bold">${stats.platformFees.toFixed(2)}</div>
-                <p className="text-xs text-gray-500">From transaction fees</p>
+                <div className="flex items-center mt-1">
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mr-2">
+                    <div className="bg-green-600 h-1.5 rounded-full w-4/5"></div>
+                  </div>
+                  <p className="text-xs text-gray-500">+15% this month</p>
+                </div>
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden bg-amber-50 border-amber-200">
-              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0">
+            <Card className="overflow-hidden bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200 shadow-sm hover:shadow-md transition-all duration-200">
+              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0 border-b border-amber-200/50">
                 <CardTitle className="text-sm font-medium text-amber-800">Pending Approvals</CardTitle>
-                <Shield className="h-4 w-4 text-amber-500" />
+                <div className="h-8 w-8 bg-amber-200 rounded-full flex items-center justify-center">
+                  <Shield className="h-4 w-4 text-amber-600" />
+                </div>
               </CardHeader>
-              <CardContent className="px-5 pb-5">
+              <CardContent className="px-5 pb-5 pt-3">
                 <div className="text-2xl font-bold text-amber-800">{stats.pendingApprovals}</div>
-                <p className="text-xs text-amber-800">Items awaiting approval</p>
+                <p className="text-xs text-amber-700 mt-1 flex items-center">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  Requires your attention
+                </p>
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden bg-red-50 border-red-200">
-              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0">
+            <Card className="overflow-hidden bg-gradient-to-br from-red-50 to-red-100 border-red-200 shadow-sm hover:shadow-md transition-all duration-200">
+              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0 border-b border-red-200/50">
                 <CardTitle className="text-sm font-medium text-red-800">Reported Content</CardTitle>
-                <Flag className="h-4 w-4 text-red-500" />
+                <div className="h-8 w-8 bg-red-200 rounded-full flex items-center justify-center">
+                  <Flag className="h-4 w-4 text-red-600" />
+                </div>
               </CardHeader>
-              <CardContent className="px-5 pb-5">
+              <CardContent className="px-5 pb-5 pt-3">
                 <div className="text-2xl font-bold text-red-800">{stats.reportedContent}</div>
-                <p className="text-xs text-red-800">Items reported by users</p>
+                <p className="text-xs text-red-700 mt-1 flex items-center">
+                  <AlertCircle className="h-3 w-3 mr-1" />
+                  Urgent review required
+                </p>
               </CardContent>
             </Card>
             
-            <Card className="overflow-hidden">
-              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0">
-                <CardTitle className="text-sm font-medium">Total Transactions</CardTitle>
-                <DollarSign className="h-4 w-4 text-gray-500" />
+            <Card className="overflow-hidden border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-200 bg-white">
+              <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0 bg-gradient-to-br from-cyan-50 to-blue-50">
+                <CardTitle className="text-sm font-medium text-cyan-900">Total Transactions</CardTitle>
+                <div className="h-8 w-8 bg-cyan-100 rounded-full flex items-center justify-center">
+                  <DollarSign className="h-4 w-4 text-cyan-600" />
+                </div>
               </CardHeader>
-              <CardContent className="px-5 pb-5">
+              <CardContent className="px-5 pb-5 pt-3">
                 <div className="text-2xl font-bold">{stats.totalTransactions}</div>
-                <p className="text-xs text-gray-500">Completed transactions</p>
+                <div className="flex items-center mt-1">
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 mr-2">
+                    <div className="bg-cyan-600 h-1.5 rounded-full w-1/2"></div>
+                  </div>
+                  <p className="text-xs text-gray-500">+5% this month</p>
+                </div>
               </CardContent>
             </Card>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200/70 bg-gradient-to-br from-white to-gray-50">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">Quick Actions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Button 
-                variant="outline" 
-                className="bg-green-50 text-green-800 border-green-200 hover:bg-green-100 hover:text-green-900 py-3"
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-3 shadow-md hover:shadow-lg transition-all duration-200"
                 onClick={() => setActiveTab('approvals')}
               >
+                <Shield className="h-4 w-4 mr-2" />
                 Review Pending Approvals
               </Button>
               <Button 
-                variant="outline" 
-                className="bg-red-50 text-red-800 border-red-200 hover:bg-red-100 hover:text-red-900 py-3"
+                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-3 shadow-md hover:shadow-lg transition-all duration-200"
                 onClick={() => setActiveTab('reports')}
               >
+                <Flag className="h-4 w-4 mr-2" />
                 Check Reported Content
               </Button>
               <Button 
-                variant="outline" 
-                className="bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100 hover:text-blue-900 py-3"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 shadow-md hover:shadow-lg transition-all duration-200"
                 onClick={() => setActiveTab('users')}
               >
+                <Users className="h-4 w-4 mr-2" />
                 Manage Users
               </Button>
             </div>
@@ -241,22 +279,25 @@ const AdminDashboard: React.FC = () => {
       {activeTab === 'users' && (
         <div className="space-y-6 px-2 md:px-0">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <h1 className="text-2xl font-bold">User Management</h1>
-            <Button className="bg-blue-600 hover:bg-blue-700">Add New User</Button>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">User Management</h1>
+            <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-md">
+              <Users className="h-4 w-4 mr-2" />
+              Add New User
+            </Button>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-5 rounded-lg shadow-sm gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-5 rounded-lg shadow-sm gap-4 border border-gray-200/70">
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
               <Input placeholder="Search users..." className="pl-9 w-full" />
             </div>
             
             <div className="flex flex-wrap gap-3">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-gray-300 shadow-sm">
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-gray-300 shadow-sm">
                 <ArrowUpDown className="h-4 w-4 mr-2" />
                 Sort
               </Button>
@@ -264,24 +305,24 @@ const AdminDashboard: React.FC = () => {
           </div>
           
           {/* Desktop Table View (hidden on mobile) */}
-          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200/70">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-gray-50 text-left">
-                    <th className="px-5 py-3.5 font-medium">Name</th>
-                    <th className="px-5 py-3.5 font-medium">Email</th>
-                    <th className="px-5 py-3.5 font-medium">Role</th>
-                    <th className="px-5 py-3.5 font-medium">Status</th>
-                    <th className="px-5 py-3.5 font-medium">Actions</th>
+                  <tr className="bg-gradient-to-r from-gray-50 to-gray-100 text-left">
+                    <th className="px-5 py-3.5 font-medium text-gray-700">Name</th>
+                    <th className="px-5 py-3.5 font-medium text-gray-700">Email</th>
+                    <th className="px-5 py-3.5 font-medium text-gray-700">Role</th>
+                    <th className="px-5 py-3.5 font-medium text-gray-700">Status</th>
+                    <th className="px-5 py-3.5 font-medium text-gray-700">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y">
+                <tbody className="divide-y divide-gray-200">
                   {users.map(user => (
-                    <tr key={user.id} className="hover:bg-gray-50">
+                    <tr key={user.id} className="hover:bg-gray-50 transition-colors duration-150">
                       <td className="px-5 py-4">
                         <div className="flex items-center">
-                          <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium mr-3">
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium mr-3 shadow-sm">
                             {user.name.charAt(0)}
                           </div>
                           {user.name}
@@ -289,23 +330,23 @@ const AdminDashboard: React.FC = () => {
                       </td>
                       <td className="px-5 py-4">{user.email}</td>
                       <td className="px-5 py-4">
-                        <Badge className={user.role === 'Admin' ? 'bg-purple-100 text-purple-800 hover:bg-purple-100' : ''}>
+                        <Badge className={user.role === 'Admin' ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white' : 'bg-gray-100 text-gray-800'}>
                           {user.role}
                         </Badge>
                       </td>
                       <td className="px-5 py-4">
                         <Badge className={user.status === 'Active' 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-100' 
-                          : 'bg-red-100 text-red-800 hover:bg-red-100'}>
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' 
+                          : 'bg-gradient-to-r from-red-500 to-red-600 text-white'}>
                           {user.status}
                         </Badge>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex space-x-2">
-                          <Button variant="ghost" size="sm" className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
-                            Edit
+                          <Button variant="ghost" size="sm" className="h-8 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200">
+                            <Edit className="h-4 w-4 mr-1" /> Edit
                           </Button>
-                          <Button variant="ghost" size="sm" className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50">
+                          <Button variant="ghost" size="sm" className="h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
                             {user.status === 'Active' ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
                           </Button>
                         </div>
@@ -318,8 +359,8 @@ const AdminDashboard: React.FC = () => {
             <div className="p-5 border-t flex items-center justify-between">
               <p className="text-sm text-gray-500">Showing 1-5 of 1,248 users</p>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm" disabled>Previous</Button>
-                <Button variant="outline" size="sm">Next</Button>
+                <Button variant="outline" size="sm" disabled className="border-gray-300">Previous</Button>
+                <Button variant="outline" size="sm" className="border-gray-300">Next</Button>
               </div>
             </div>
           </div>
@@ -327,11 +368,11 @@ const AdminDashboard: React.FC = () => {
           {/* Mobile Card View (hidden on desktop) */}
           <div className="md:hidden space-y-4">
             {users.map(user => (
-              <Card key={user.id} className="overflow-hidden">
+              <Card key={user.id} className="overflow-hidden border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-200">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium mr-3">
+                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-medium mr-3 shadow-sm">
                         {user.name.charAt(0)}
                       </div>
                       <div>
@@ -345,7 +386,7 @@ const AdminDashboard: React.FC = () => {
                     <div className="text-sm">
                       <span className="text-gray-500">Role:</span>
                       <div className="mt-1">
-                        <Badge className={user.role === 'Admin' ? 'bg-purple-100 text-purple-800 hover:bg-purple-100' : ''}>
+                        <Badge className={user.role === 'Admin' ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white' : 'bg-gray-100 text-gray-800'}>
                           {user.role}
                         </Badge>
                       </div>
@@ -355,8 +396,8 @@ const AdminDashboard: React.FC = () => {
                       <span className="text-gray-500">Status:</span>
                       <div className="mt-1">
                         <Badge className={user.status === 'Active' 
-                          ? 'bg-green-100 text-green-800 hover:bg-green-100' 
-                          : 'bg-red-100 text-red-800 hover:bg-red-100'}>
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' 
+                          : 'bg-gradient-to-r from-red-500 to-red-600 text-white'}>
                           {user.status}
                         </Badge>
                       </div>
@@ -364,10 +405,11 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   
                   <div className="flex justify-end mt-4 gap-2">
-                    <Button variant="outline" size="sm" className="h-8 px-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                    <Button variant="outline" size="sm" className="h-8 px-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200">
+                      <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
-                    <Button variant="outline" size="sm" className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50">
+                    <Button variant="outline" size="sm" className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200">
                       {user.status === 'Active' ? 'Deactivate' : 'Activate'}
                     </Button>
                   </div>
@@ -378,8 +420,8 @@ const AdminDashboard: React.FC = () => {
             <div className="flex items-center justify-between pt-2">
               <p className="text-sm text-gray-500">Showing 1-5 of 1,248 users</p>
               <div className="flex space-x-2">
-                <Button variant="outline" size="sm" disabled>Previous</Button>
-                <Button variant="outline" size="sm">Next</Button>
+                <Button variant="outline" size="sm" disabled className="border-gray-300">Previous</Button>
+                <Button variant="outline" size="sm" className="border-gray-300">Next</Button>
               </div>
             </div>
           </div>

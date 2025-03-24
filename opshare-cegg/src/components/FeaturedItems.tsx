@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ItemCard from './ItemCard';
+import { Button } from "@/components/ui/button";
 
 const featuredItems = [
   {
@@ -71,31 +71,51 @@ const featuredItems = [
 
 const FeaturedItems = () => {
   return (
-    <section className="section-padding">
-      <div className="container mx-auto">
+    <section className="py-20 relative">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white to-gray-50 opacity-80"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 animate-fade-in">
           <div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Items</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl">
+            <span className="inline-block px-4 py-1 mb-3 text-sm font-semibold text-green-600 bg-green-50 rounded-full border border-green-100">
+              Explore Items
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Featured Items</h2>
+            <p className="text-gray-600 text-lg max-w-2xl">
               Discover high-quality items available in your community, from tools and equipment to furniture and electronics.
             </p>
           </div>
-          <Link 
-            to="/browse"
-            className="inline-flex items-center text-green font-medium hover:text-green-700 transition-colors mt-4 md:mt-0"
-          >
-            Browse all items
-            <ArrowRight size={16} className="ml-1" />
+          <Link to="/browse">
+            <Button 
+              variant="outline" 
+              className="mt-4 md:mt-0 border-green-300 text-green-600 hover:bg-green-50 hover:text-green-700 transition-colors"
+            >
+              Browse all items
+              <ArrowRight size={16} className="ml-2" />
+            </Button>
           </Link>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {featuredItems.map((item, index) => (
-            <ItemCard 
+            <div 
               key={item.id} 
-              {...item} 
-            />
+              className="animate-fade-in" 
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
+              <ItemCard {...item} />
+            </div>
           ))}
+        </div>
+        
+        <div className="flex justify-center mt-12">
+          <Link to="/browse">
+            <Button className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white shadow-md hover:shadow-lg transition-all">
+              See More Items
+              <ArrowRight size={16} className="ml-2" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

@@ -1,7 +1,8 @@
-
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const categories = [
   {
@@ -13,8 +14,10 @@ const categories = [
       </svg>
     ),
     itemCount: 1243,
-    color: 'bg-yellow-100',
-    iconColor: 'text-yellow-700',
+    color: 'bg-gradient-to-br from-yellow-50 to-yellow-100',
+    iconColor: 'text-yellow-600',
+    borderColor: 'border-yellow-200',
+    hoverColor: 'hover:bg-yellow-50',
   },
   {
     id: 2,
@@ -31,8 +34,10 @@ const categories = [
       </svg>
     ),
     itemCount: 872,
-    color: 'bg-green-100',
-    iconColor: 'text-green-700',
+    color: 'bg-gradient-to-br from-green-50 to-green-100',
+    iconColor: 'text-green-600',
+    borderColor: 'border-green-200',
+    hoverColor: 'hover:bg-green-50',
   },
   {
     id: 3,
@@ -53,8 +58,10 @@ const categories = [
       </svg>
     ),
     itemCount: 1054,
-    color: 'bg-blue-100',
-    iconColor: 'text-blue-700',
+    color: 'bg-gradient-to-br from-blue-50 to-blue-100',
+    iconColor: 'text-blue-600',
+    borderColor: 'border-blue-200',
+    hoverColor: 'hover:bg-blue-50',
   },
   {
     id: 4,
@@ -68,8 +75,10 @@ const categories = [
       </svg>
     ),
     itemCount: 658,
-    color: 'bg-purple-100',
-    iconColor: 'text-purple-700',
+    color: 'bg-gradient-to-br from-purple-50 to-purple-100',
+    iconColor: 'text-purple-600',
+    borderColor: 'border-purple-200',
+    hoverColor: 'hover:bg-purple-50',
   },
   {
     id: 5,
@@ -83,8 +92,10 @@ const categories = [
       </svg>
     ),
     itemCount: 531,
-    color: 'bg-red-100',
-    iconColor: 'text-red-700',
+    color: 'bg-gradient-to-br from-red-50 to-red-100',
+    iconColor: 'text-red-600',
+    borderColor: 'border-red-200',
+    hoverColor: 'hover:bg-red-50',
   },
   {
     id: 6,
@@ -95,46 +106,53 @@ const categories = [
       </svg>
     ),
     itemCount: 423,
-    color: 'bg-teal-100',
-    iconColor: 'text-teal-700',
+    color: 'bg-gradient-to-br from-teal-50 to-teal-100',
+    iconColor: 'text-teal-600',
+    borderColor: 'border-teal-200',
+    hoverColor: 'hover:bg-teal-50',
   },
 ];
 
 const CategorySection = () => {
   return (
-    <section className="section-padding">
-      <div className="container mx-auto">
+    <section className="py-20 bg-gray-50 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-white to-gray-50 opacity-90"></div>
+      <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Browse by Category</h2>
-          <p className="text-muted-foreground text-lg">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-800">Browse by Category</h2>
+          <p className="text-gray-600 text-lg">
             Find exactly what you need from thousands of items available across various categories.
           </p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-10">
           {categories.map((category, index) => (
             <Link 
               key={category.id} 
               to={`/category/${category.id}`}
-              className="glass-card flex flex-col items-center p-6 text-center hover:scale-105 transition-all duration-300 animate-scale-in"
+              className={`bg-white rounded-xl shadow-md hover:shadow-lg p-6 flex flex-col items-center text-center hover:scale-102 transition-all duration-300 border ${category.borderColor} ${category.hoverColor} animate-scale-in`}
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className={`w-16 h-16 rounded-full ${category.color} flex items-center justify-center mb-4 ${category.iconColor}`}>
+              <div className={`w-16 h-16 rounded-full ${category.color} flex items-center justify-center mb-4 ${category.iconColor} shadow-sm`}>
                 {category.icon}
               </div>
-              <h3 className="font-semibold mb-1">{category.name}</h3>
-              <p className="text-xs text-muted-foreground">{category.itemCount} items</p>
+              <h3 className="font-semibold mb-1 text-gray-800">{category.name}</h3>
+              <Badge variant="secondary" className="mt-2">
+                {category.itemCount} items
+              </Badge>
             </Link>
           ))}
         </div>
         
         <div className="text-center">
-          <Link 
-            to="/categories"
-            className="inline-flex items-center text-green font-medium hover:text-green-700 transition-colors"
-          >
-            View all categories
-            <ArrowRight size={16} className="ml-1" />
+          <Link to="/categories">
+            <Button 
+              variant="outline" 
+              className="border-green-300 text-green-600 hover:bg-green-50 hover:text-green-700 transition-colors"
+            >
+              View all categories
+              <ArrowRight size={16} className="ml-2" />
+            </Button>
           </Link>
         </div>
       </div>

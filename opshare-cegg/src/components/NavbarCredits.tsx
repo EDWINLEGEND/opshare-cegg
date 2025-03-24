@@ -1,6 +1,8 @@
 import React from 'react';
 import { Leaf, Coins, TrendingUp } from 'lucide-react';
 import { useCreditStore } from '@/stores/useCreditStore';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 
 const NavbarCredits = () => {
   const { leafs, treeCoins } = useCreditStore();
@@ -9,30 +11,53 @@ const NavbarCredits = () => {
   const financialEarnings = 0.00;
   
   return (
-    <div className="flex items-center gap-2">
-      {/* Leaf credits */}
-      <div className="flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full">
-        <Leaf className="w-4 h-4 mr-1.5" />
-        <span className="font-medium">{leafs}</span>
+    <TooltipProvider>
+      <div className="flex items-center gap-2">
+        {/* Leaf credits */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center bg-gradient-to-r from-green-50 to-green-100 text-green-600 px-3 py-1.5 rounded-full border border-green-200 shadow-sm hover:shadow-md transition-all cursor-help">
+              <Leaf className="w-4 h-4 mr-1.5" />
+              <span className="font-medium">{leafs.toLocaleString()}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Leaf Credits: Earn by completing eco-missions</p>
+          </TooltipContent>
+        </Tooltip>
+        
+        {/* Tree Coins */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center bg-gradient-to-r from-amber-50 to-amber-100 text-amber-600 px-3 py-1.5 rounded-full border border-amber-200 shadow-sm hover:shadow-md transition-all cursor-help">
+              <Coins className="w-4 h-4 mr-1.5" />
+              <span className="font-medium">{treeCoins.toLocaleString()}</span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>TreeCoins: Platform currency for transactions</p>
+          </TooltipContent>
+        </Tooltip>
+        
+        {/* Growth indicator */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center text-green-600 ml-1 cursor-help">
+              <TrendingUp className="w-4 h-4" />
+              <div className="ml-1.5 w-16">
+                <Progress 
+                  value={(treeCoins / 200) * 100} 
+                  className="h-2 bg-gray-100" 
+                />
+              </div>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Eco Impact Growth: {Math.round((treeCoins / 200) * 100)}%</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
-      
-      {/* Financial earnings */}
-      <div className="flex items-center bg-amber-100 text-amber-700 px-3 py-1 rounded-full">
-        <Coins className="w-4 h-4 mr-1.5" />
-        <span className="font-medium">{financialEarnings.toFixed(2)}</span>
-      </div>
-      
-      {/* Growth indicator */}
-      <div className="flex items-center text-green-600">
-        <TrendingUp className="w-4 h-4" />
-        <div className="ml-1 w-16 h-2 bg-gray-200 rounded-full">
-          <div 
-            className="h-full bg-green-500 rounded-full" 
-            style={{ width: `${(treeCoins / 200) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-    </div>
+    </TooltipProvider>
   );
 };
 

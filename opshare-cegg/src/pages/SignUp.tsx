@@ -61,7 +61,7 @@ const SignUp = () => {
           <div className="absolute top-40 -right-20 w-80 h-80 bg-emerald-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
           <div className="absolute bottom-40 left-20 w-80 h-80 bg-teal-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
         </div>
-        
+
         <div className="relative z-10 flex flex-col items-center justify-center p-12 w-full">
           <div className="w-full max-w-md">
             <h1 className="text-4xl font-bold mb-6">Join Our Community</h1>
@@ -248,8 +248,8 @@ const SignUp = () => {
                     <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
                     <path d="M2 12h20" />
                     <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                  </svg>
-                </div>
+                </svg>
+              </div>
                 
                 {/* Light particles */}
                 <div className="particles absolute inset-0">
@@ -317,95 +317,95 @@ const SignUp = () => {
   
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <div className="space-y-2 w-full">
                   <Label htmlFor="firstName" className="text-gray-700">First Name</Label>
                   <Input 
                     id="firstName"
-                    name="firstName" 
-                    type="text" 
-                    required 
+                name="firstName" 
+                type="text" 
+                required 
                     placeholder="John"
                     className="w-full"
-                    onChange={handleChange} 
-                  />
+                onChange={handleChange} 
+              />
                 </div>
                 <div className="space-y-2 w-full">
                   <Label htmlFor="lastName" className="text-gray-700">Last Name</Label>
                   <Input 
                     id="lastName"
-                    name="lastName" 
-                    type="text" 
-                    required 
+                name="lastName" 
+                type="text" 
+                required 
                     placeholder="Doe"
                     className="w-full"
-                    onChange={handleChange} 
-                  />
-                </div>
+                onChange={handleChange} 
+              />
+            </div>
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-gray-700">Email address</Label>
                 <Input 
                   id="email"
-                  name="email" 
-                  type="email" 
-                  required 
+              name="email" 
+              type="email" 
+              required 
                   placeholder="name@example.com"
                   className="w-full"
-                  onChange={handleChange} 
-                />
+              onChange={handleChange} 
+            />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-gray-700">Password</Label>
                 <Input 
                   id="password"
-                  name="password" 
-                  type="password" 
-                  required 
+              name="password" 
+              type="password" 
+              required 
                   placeholder="••••••••"
                   className="w-full"
-                  onChange={handleChange} 
-                />
+              onChange={handleChange} 
+            />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-gray-700">Confirm Password</Label>
                 <Input 
                   id="confirmPassword"
-                  name="confirmPassword" 
-                  type="password" 
-                  required 
+              name="confirmPassword" 
+              type="password" 
+              required 
                   placeholder="••••••••"
                   className="w-full"
-                  onChange={handleChange} 
-                />
+              onChange={handleChange} 
+            />
               </div>
-            </div>
-  
+          </div>
+
             <Button 
-              type="submit" 
+            type="submit" 
               className="w-full bg-green-600 hover:bg-green-700 text-white"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Creating Account...
-                </>
-              ) : (
-                <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>
-              )}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating Account...
+              </>
+            ) : (
+              <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>
+            )}
             </Button>
-            
+
             <div className="text-center mt-4">
               <p className="text-sm text-gray-600">
                 Already have an account? <Link to="/signin" className="font-medium text-green-600 hover:text-green-800">Sign in</Link>
-              </p>
+        </p>
             </div>
           </form>
         </div>

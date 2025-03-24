@@ -40,7 +40,10 @@ import {
   MapPin,
   Filter,
   Download,
-  AlertTriangle
+  AlertTriangle,
+  UserPlus,
+  Trash2,
+  Eye
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -160,7 +163,7 @@ const AdminUsers = () => {
     <AdminLayout>
       <div className="p-4 md:p-6">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-          <h1 className="text-2xl font-bold">User Management</h1>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">User Management</h1>
           
           <div className="flex flex-wrap gap-3">
             <div className="relative flex-grow max-w-[250px]">
@@ -168,45 +171,50 @@ const AdminUsers = () => {
               <Input
                 type="search"
                 placeholder="Search users..."
-                className="pl-9 w-full"
+                className="pl-9 w-full border-gray-200 focus-visible:ring-gray-400"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="border-gray-300 hover:bg-gray-50">
+              <Filter className="h-4 w-4 text-gray-600" />
             </Button>
             
-            <Button variant="outline" size="icon">
-              <Download className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="border-gray-300 hover:bg-gray-50">
+              <Download className="h-4 w-4 text-gray-600" />
+            </Button>
+            
+            <Button className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-sm">
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add User
             </Button>
           </div>
         </div>
         
         {/* Desktop Table View (hidden on mobile) */}
-        <div className="hidden md:block bg-white rounded-md shadow-sm overflow-hidden">
+        <div className="hidden md:block bg-white rounded-md shadow-sm overflow-hidden border border-gray-200/70">
           <Table>
-            <TableHeader>
+            <TableHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead>Last Active</TableHead>
-                <TableHead>Verified</TableHead>
-                <TableHead>Activity</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-gray-700">User</TableHead>
+                <TableHead className="text-gray-700">Status</TableHead>
+                <TableHead className="text-gray-700">Role</TableHead>
+                <TableHead className="text-gray-700">Joined</TableHead>
+                <TableHead className="text-gray-700">Last Active</TableHead>
+                <TableHead className="text-gray-700">Verified</TableHead>
+                <TableHead className="text-gray-700">Activity</TableHead>
+                <TableHead className="text-right text-gray-700">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user.id} className="hover:bg-gray-50 transition-colors duration-150">
                   <TableCell className="font-medium">
                     <div className="flex items-center">
-                      <Avatar className="h-8 w-8 mr-2">
+                      <Avatar className="h-8 w-8 mr-2 border border-gray-200/70 shadow-sm">
                         <AvatarImage src={user.avatar} alt={user.name} />
-                        <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-medium">{user.name}</div>
@@ -215,15 +223,16 @@ const AdminUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={
-                      user.status === 'active' ? 'success' :
-                      user.status === 'inactive' ? 'outline' : 'destructive'
+                    <Badge className={
+                      user.status === 'active' ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' :
+                      user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 
+                      'bg-gradient-to-r from-red-500 to-red-600 text-white'
                     }>
                       {user.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                    <Badge className={user.role === 'admin' ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'}>
                       {user.role}
                     </Badge>
                   </TableCell>
@@ -235,9 +244,9 @@ const AdminUsers = () => {
                   </TableCell>
                   <TableCell>
                     {user.verified ? (
-                      <Badge variant="success" className="bg-green-100 text-green-800">Yes</Badge>
+                      <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white">Yes</Badge>
                     ) : (
-                      <Badge variant="outline" className="bg-gray-100">No</Badge>
+                      <Badge className="bg-gray-100 text-gray-800">No</Badge>
                     )}
                   </TableCell>
                   <TableCell>
@@ -247,68 +256,81 @@ const AdminUsers = () => {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
+                    <div className="flex justify-end space-x-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => {
                           setSelectedUser(user);
                           setUserDetailsOpen(true);
-                        }}>
-                          View details
-                        </DropdownMenuItem>
-                        
-                        {!user.verified && (
-                          <DropdownMenuItem onClick={() => handleUserAction(user, 'verify')}>
-                            Verify account
-                          </DropdownMenuItem>
-                        )}
-                        
-                        {user.status !== 'suspended' ? (
-                          <DropdownMenuItem 
-                            className="text-amber-600"
-                            onClick={() => handleUserAction(user, 'suspend')}
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-8 w-8 text-gray-600 hover:text-gray-700 hover:bg-gray-50"
                           >
-                            Suspend account
-                          </DropdownMenuItem>
-                        ) : (
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          {!user.verified && (
+                            <DropdownMenuItem 
+                              className="text-green-600 cursor-pointer flex items-center"
+                              onClick={() => handleUserAction(user, 'verify')}
+                            >
+                              <UserCheck className="h-4 w-4 mr-2" />
+                              Verify User
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem 
-                            className="text-green-600"
-                            onClick={() => handleUserAction(user, 'verify')}
+                            className={`${user.status === 'active' ? 'text-amber-600' : 'text-green-600'} cursor-pointer flex items-center`}
+                            onClick={() => handleUserAction(user, user.status === 'active' ? 'suspend' : 'verify')}
                           >
-                            Reactivate account
+                            {user.status === 'active' ? (
+                              <>
+                                <UserX className="h-4 w-4 mr-2" />
+                                Suspend User
+                              </>
+                            ) : (
+                              <>
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                Activate User
+                              </>
+                            )}
                           </DropdownMenuItem>
-                        )}
-                        
-                        <DropdownMenuItem 
-                          className="text-red-600"
-                          onClick={() => handleUserAction(user, 'delete')}
-                        >
-                          Delete account
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <DropdownMenuItem 
+                            className="text-red-600 cursor-pointer flex items-center"
+                            onClick={() => handleUserAction(user, 'delete')}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete User
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
-
-        {/* Mobile Card View (hidden on desktop) */}
+        
+        {/* Mobile Card View */}
         <div className="md:hidden space-y-4">
           {filteredUsers.map((user) => (
-            <Card key={user.id} className="overflow-hidden">
+            <Card key={user.id} className="overflow-hidden border border-gray-200/70 shadow-sm hover:shadow-md transition-all duration-200">
               <CardContent className="p-4">
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between">
                   <div className="flex items-center">
-                    <Avatar className="h-10 w-10 mr-3">
+                    <Avatar className="h-10 w-10 mr-3 border border-gray-200/70 shadow-sm">
                       <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="font-medium">{user.name}</div>
@@ -317,101 +339,108 @@ const AdminUsers = () => {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        className="h-8 w-8 text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                      >
                         <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open menu</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => {
-                        setSelectedUser(user);
-                        setUserDetailsOpen(true);
-                      }}>
-                        View details
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem 
+                        className="cursor-pointer flex items-center"
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setUserDetailsOpen(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Details
                       </DropdownMenuItem>
-                      
                       {!user.verified && (
-                        <DropdownMenuItem onClick={() => handleUserAction(user, 'verify')}>
-                          Verify account
-                        </DropdownMenuItem>
-                      )}
-                      
-                      {user.status !== 'suspended' ? (
                         <DropdownMenuItem 
-                          className="text-amber-600"
-                          onClick={() => handleUserAction(user, 'suspend')}
-                        >
-                          Suspend account
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem 
-                          className="text-green-600"
+                          className="text-green-600 cursor-pointer flex items-center"
                           onClick={() => handleUserAction(user, 'verify')}
                         >
-                          Reactivate account
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          Verify User
                         </DropdownMenuItem>
                       )}
-                      
                       <DropdownMenuItem 
-                        className="text-red-600"
+                        className={`${user.status === 'active' ? 'text-amber-600' : 'text-green-600'} cursor-pointer flex items-center`}
+                        onClick={() => handleUserAction(user, user.status === 'active' ? 'suspend' : 'verify')}
+                      >
+                        {user.status === 'active' ? (
+                          <>
+                            <UserX className="h-4 w-4 mr-2" />
+                            Suspend User
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="h-4 w-4 mr-2" />
+                            Activate User
+                          </>
+                        )}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-red-600 cursor-pointer flex items-center"
                         onClick={() => handleUserAction(user, 'delete')}
                       >
-                        Delete account
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete User
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
                 
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  <div className="text-sm">
-                    <span className="text-gray-500">Status:</span>
-                    <div className="mt-1">
-                      <Badge variant={
-                        user.status === 'active' ? 'success' :
-                        user.status === 'inactive' ? 'outline' : 'destructive'
-                      }>
-                        {user.status}
-                      </Badge>
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Status</div>
+                    <Badge className={
+                      user.status === 'active' ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' :
+                      user.status === 'inactive' ? 'bg-gray-100 text-gray-800' : 
+                      'bg-gradient-to-r from-red-500 to-red-600 text-white'
+                    }>
+                      {user.status}
+                    </Badge>
+                  </div>
+                  
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Role</div>
+                    <Badge className={user.role === 'admin' ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'}>
+                      {user.role}
+                    </Badge>
+                  </div>
+                  
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Joined</div>
+                    <div className="text-sm">
+                      {format(new Date(user.joinDate), 'MMM d, yyyy')}
                     </div>
                   </div>
                   
-                  <div className="text-sm">
-                    <span className="text-gray-500">Role:</span>
-                    <div className="mt-1">
-                      <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                        {user.role}
-                      </Badge>
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">Activity</div>
+                    <div className="text-sm">
+                      {user.listings} listings, {user.transactions} trans.
                     </div>
                   </div>
-                  
-                  <div className="text-sm">
-                    <span className="text-gray-500">Joined:</span>
-                    <div className="mt-1">{format(new Date(user.joinDate), 'MMM d, yyyy')}</div>
-                  </div>
-                  
-                  <div className="text-sm">
-                    <span className="text-gray-500">Last Active:</span>
-                    <div className="mt-1">{format(new Date(user.lastActive), 'MMM d, yyyy')}</div>
-                  </div>
-                  
-                  <div className="text-sm">
-                    <span className="text-gray-500">Verified:</span>
-                    <div className="mt-1">
-                      {user.verified ? (
-                        <Badge variant="success" className="bg-green-100 text-green-800">Yes</Badge>
-                      ) : (
-                        <Badge variant="outline" className="bg-gray-100">No</Badge>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="text-sm">
-                    <span className="text-gray-500">Activity:</span>
-                    <div className="mt-1">
-                      <div>{user.listings} listings</div>
-                      <div>{user.transactions} transactions</div>
-                    </div>
-                  </div>
+                </div>
+                
+                <div className="mt-4 flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                    onClick={() => {
+                      setSelectedUser(user);
+                      setUserDetailsOpen(true);
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Details
+                  </Button>
                 </div>
               </CardContent>
             </Card>

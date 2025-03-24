@@ -1,8 +1,16 @@
 import React, { useState, useRef } from 'react';
-import { X, Plus, Upload, ArrowLeft } from 'lucide-react';
+import { X, Plus, Upload, ArrowLeft, ImagePlus, Banknote, Tag, Info, MapPin, FileText } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
 import { getApiUrl } from '@/config/api';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const SellForm = () => {
   const navigate = useNavigate();
@@ -160,12 +168,14 @@ const SellForm = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
-      <div className="bg-white shadow-sm">
+      <div className="bg-white shadow-sm sticky top-0 z-30">
         <div className="container mx-auto px-4 py-4 flex items-center">
           <Link to="/dashboard" className="mr-4 text-gray-600 hover:text-gray-900">
-            <ArrowLeft size={20} />
+            <Button variant="ghost" size="icon" className="h-9 w-9">
+              <ArrowLeft size={18} />
+            </Button>
           </Link>
-          <h1 className="text-xl md:text-2xl font-semibold">Create a Listing</h1>
+          <h1 className="text-xl md:text-2xl font-semibold text-gray-800">Create a Listing</h1>
         </div>
       </div>
       
@@ -175,139 +185,148 @@ const SellForm = () => {
           <form onSubmit={handleSubmit}>
             {/* Error message */}
             {error && (
-              <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0 text-red-500">
-                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
-                  </div>
-                </div>
-              </div>
+              <Alert variant="destructive" className="mb-6">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
             
             {/* Listing type selection */}
-            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6">
-              <h2 className="text-xl font-medium text-gray-900 mb-4">Listing Type</h2>
-              <p className="text-gray-600 mb-4">
-                Choose whether you want to rent out your item or sell it outright.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  type="button"
-                  onClick={() => setListingType('rent')}
-                  className={`flex-1 p-4 rounded-lg border-2 ${
+            <Card className="mb-6 shadow-sm border-gray-200 overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
+                <CardTitle className="flex items-center text-xl">
+                  <Tag className="mr-2 h-5 w-5 text-gray-700" />
+                  Listing Type
+                </CardTitle>
+                <CardDescription>
+                  Choose whether you want to rent out your item or sell it outright.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <RadioGroup 
+                  defaultValue="rent" 
+                  value={listingType}
+                  onValueChange={setListingType}
+                  className="flex flex-col sm:flex-row gap-4"
+                >
+                  <div className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                     listingType === 'rent' 
                       ? 'border-green-600 bg-green-50' 
-                      : 'border-gray-200'
-                  }`}
-                >
-                  <h3 className="font-medium text-lg mb-2">Rent</h3>
-                  <p className="text-sm text-gray-600">
-                    Lend your item to others for a period of time
-                  </p>
-                </button>
-                
-                <button
-                  type="button"
-                  onClick={() => setListingType('sell')}
-                  className={`flex-1 p-4 rounded-lg border-2 ${
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <RadioGroupItem value="rent" id="rent" className="sr-only" />
+                    <Label htmlFor="rent" className="flex flex-col cursor-pointer">
+                      <h3 className="font-medium text-lg mb-1">Rent</h3>
+                      <p className="text-sm text-gray-600">
+                        Lend your item to others for a period of time
+                      </p>
+                    </Label>
+                  </div>
+                  
+                  <div className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                     listingType === 'sell' 
                       ? 'border-green-600 bg-green-50' 
-                      : 'border-gray-200'
-                  }`}
-                >
-                  <h3 className="font-medium text-lg mb-2">Sell</h3>
-                  <p className="text-sm text-gray-600">
-                    Sell your item outright for a one-time payment
-                  </p>
-                </button>
-              </div>
-            </div>
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                    <RadioGroupItem value="sell" id="sell" className="sr-only" />
+                    <Label htmlFor="sell" className="flex flex-col cursor-pointer">
+                      <h3 className="font-medium text-lg mb-1">Sell</h3>
+                      <p className="text-sm text-gray-600">
+                        Sell your item outright for a one-time payment
+                      </p>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </CardContent>
+            </Card>
             
             {/* Image upload */}
-            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6">
-              <h2 className="text-xl font-medium text-gray-900 mb-4">Upload Photos</h2>
-              <p className="text-gray-600 mb-4">
-                Add up to 5 photos of your item. The first image will be your listing's cover photo.
-              </p>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 mb-4">
-                {uploadedImages.map(image => (
-                  <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden border">
-                    <img src={image.url} alt="Uploaded" className="w-full h-full object-cover" />
-                    <button 
-                      type="button"
-                      onClick={() => removeImage(image.id)}
-                      className="absolute top-1 right-1 bg-black/50 rounded-full p-1 text-white"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
-                
-                {uploadedImages.length < 5 && (
-                  <label className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center aspect-square hover:bg-gray-100">
-                    <Upload size={24} className="text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500 text-center px-1">Add Photo</span>
-                    <input 
-                      type="file" 
-                      className="hidden" 
-                      accept="image/*" 
-                      onChange={handleImageUpload}
-                      multiple={uploadedImages.length < 4}
-                    />
-                  </label>
-                )}
-              </div>
-            </div>
+            <Card className="mb-6 shadow-sm border-gray-200 overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
+                <CardTitle className="flex items-center text-xl">
+                  <ImagePlus className="mr-2 h-5 w-5 text-gray-700" />
+                  Upload Photos
+                </CardTitle>
+                <CardDescription>
+                  Add up to 5 photos of your item. The first image will be your listing's cover photo.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                  {uploadedImages.map(image => (
+                    <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden border shadow-sm bg-white">
+                      <img src={image.url} alt="Uploaded" className="w-full h-full object-cover" />
+                      <Button 
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-1 right-1 h-6 w-6 bg-black/50 hover:bg-black/70 rounded-full p-1 text-white"
+                        onClick={() => removeImage(image.id)}
+                      >
+                        <X size={14} />
+                      </Button>
+                    </div>
+                  ))}
+                  
+                  {uploadedImages.length < 5 && (
+                    <label className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center aspect-square hover:bg-gray-50 transition-colors bg-white shadow-sm">
+                      <Upload size={24} className="text-gray-400 mb-2" />
+                      <span className="text-sm text-gray-500 text-center px-1">Add Photo</span>
+                      <input 
+                        type="file" 
+                        className="hidden" 
+                        accept="image/*" 
+                        onChange={handleImageUpload}
+                        multiple={uploadedImages.length < 4}
+                      />
+                    </label>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
             
             {/* Item details */}
-            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6">
-              <h2 className="text-xl font-medium text-gray-900 mb-4">Item Details</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                    Title
-                  </label>
-                  <input
-                    type="text"
+            <Card className="mb-6 shadow-sm border-gray-200 overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
+                <CardTitle className="flex items-center text-xl">
+                  <FileText className="mr-2 h-5 w-5 text-gray-700" />
+                  Item Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Title</Label>
+                  <Input
                     id="title"
                     ref={titleRef}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                    className="focus-visible:ring-green-600 focus-visible:ring-offset-0"
                     placeholder="Enter a descriptive title (e.g. 'Bosch Electric Drill')"
                     required
                   />
                 </div>
                 
-                <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                <div className="space-y-2">
+                  <Label htmlFor="location" className="flex items-center">
+                    <MapPin className="h-4 w-4 mr-1 text-gray-500" />
                     Location
-                  </label>
-                  <input
-                    type="text"
+                  </Label>
+                  <Input
                     id="location"
                     ref={locationRef}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                    className="focus-visible:ring-green-600 focus-visible:ring-offset-0"
                     placeholder="Enter your location (e.g. 'Downtown, New York')"
                     required
                   />
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                      Category
-                    </label>
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
                     <select
                       id="category"
                       ref={categoryRef}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
                       required
                     >
                       <option value="">Select a category</option>
@@ -321,14 +340,12 @@ const SellForm = () => {
                     </select>
                   </div>
                   
-                  <div>
-                    <label htmlFor="condition" className="block text-sm font-medium text-gray-700 mb-1">
-                      Condition
-                    </label>
+                  <div className="space-y-2">
+                    <Label htmlFor="condition">Condition</Label>
                     <select
                       id="condition"
                       ref={conditionRef}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
                       required
                     >
                       <option value="">Select condition</option>
@@ -341,124 +358,120 @@ const SellForm = () => {
                   </div>
                 </div>
                 
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
-                  <textarea
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
                     id="description"
                     ref={descriptionRef}
                     rows={4}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                    className="focus-visible:ring-green-600 focus-visible:ring-offset-0 min-h-24"
                     placeholder="Describe your item in detail. Include brand, model, features, etc."
                     required
-                  ></textarea>
+                  />
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
             
             {/* Pricing */}
-            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6">
-              <h2 className="text-xl font-medium text-gray-900 mb-4">Pricing</h2>
-              
-              {listingType === 'rent' ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="rentalPrice" className="block text-sm font-medium text-gray-700 mb-1">
-                        Rental Price
-                      </label>
+            <Card className="mb-6 shadow-sm border-gray-200 overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100">
+                <CardTitle className="flex items-center text-xl">
+                  <Banknote className="mr-2 h-5 w-5 text-gray-700" />
+                  Pricing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {listingType === 'rent' ? (
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="rentalPrice">Rental Price</Label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500">$</span>
+                          </div>
+                          <Input
+                            type="number"
+                            id="rentalPrice"
+                            ref={rentalPriceRef}
+                            min="0"
+                            step="0.01"
+                            className="pl-8 focus-visible:ring-green-600 focus-visible:ring-offset-0"
+                            placeholder="0.00"
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="rentalPeriod">Per</Label>
+                        <select
+                          id="rentalPeriod"
+                          ref={rentalPeriodRef}
+                          className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-white"
+                          required
+                        >
+                          <option value="hour">Hour</option>
+                          <option value="day" selected>Day</option>
+                          <option value="week">Week</option>
+                          <option value="month">Month</option>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="securityDeposit">Security Deposit (optional)</Label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                           <span className="text-gray-500">$</span>
                         </div>
-                        <input
+                        <Input
                           type="number"
-                          id="rentalPrice"
-                          ref={rentalPriceRef}
+                          id="securityDeposit"
+                          ref={securityDepositRef}
                           min="0"
                           step="0.01"
-                          className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                          className="pl-8 focus-visible:ring-green-600 focus-visible:ring-offset-0"
                           placeholder="0.00"
-                          required
                         />
                       </div>
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="rentalPeriod" className="block text-sm font-medium text-gray-700 mb-1">
-                        Per
-                      </label>
-                      <select
-                        id="rentalPeriod"
-                        ref={rentalPeriodRef}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
-                        required
-                      >
-                        <option value="hour">Hour</option>
-                        <option value="day" selected>Day</option>
-                        <option value="week">Week</option>
-                        <option value="month">Month</option>
-                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        A security deposit helps protect your item and will be refunded when the item is returned in good condition.
+                      </p>
                     </div>
                   </div>
-                  
-                  <div>
-                    <label htmlFor="securityDeposit" className="block text-sm font-medium text-gray-700 mb-1">
-                      Security Deposit (optional)
-                    </label>
-                    <div className="relative">
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="salePrice">Sale Price</Label>
+                    <div className="relative max-w-xs">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <span className="text-gray-500">$</span>
                       </div>
-                      <input
+                      <Input
                         type="number"
-                        id="securityDeposit"
-                        ref={securityDepositRef}
+                        id="salePrice"
+                        ref={salePriceRef}
                         min="0"
                         step="0.01"
-                        className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
+                        className="pl-8 focus-visible:ring-green-600 focus-visible:ring-offset-0"
                         placeholder="0.00"
+                        required
                       />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      A security deposit helps protect your item and will be refunded when the item is returned in good condition.
-                    </p>
                   </div>
-                </div>
-              ) : (
-                <div>
-                  <label htmlFor="salePrice" className="block text-sm font-medium text-gray-700 mb-1">
-                    Sale Price
-                  </label>
-                  <div className="relative max-w-xs">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500">$</span>
-                    </div>
-                    <input
-                      type="number"
-                      id="salePrice"
-                      ref={salePriceRef}
-                      min="0"
-                      step="0.01"
-                      className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
+                )}
+              </CardContent>
+            </Card>
             
             {/* Submit button */}
             <div className="flex justify-end">
-              <button 
+              <Button 
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full px-6 py-3 bg-green-600 text-white font-button font-medium rounded-lg hover:bg-green-700 transition-colors"
+                className="w-full h-12 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white shadow-md hover:shadow-lg transition-all font-medium"
               >
                 {isSubmitting ? 'Creating Listing...' : 'Publish Listing'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

@@ -1,24 +1,32 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, ShoppingBag, User, LogOut, Settings, Gift, Award, Shield } from 'lucide-react';
+import { Menu, X, ShoppingBag, User, LogOut, Settings, Gift, Award, Shield, ChevronDown } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import NavbarCredits from './NavbarCredits';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuLabel, 
+  DropdownMenuSeparator, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, isAuthenticated, logout, isAdmin } = useUser();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    setIsProfileOpen(false);
     // You might want to redirect to home page after logout
   };
 
   return (
-    <nav className="bg-white sticky top-0 z-50 shadow-sm">
+    <nav className="bg-white sticky top-0 z-50 shadow-md backdrop-blur-sm bg-white/90 border-b border-gray-100">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -26,108 +34,99 @@ const Navbar = () => {
               <img 
                 src="/logo.svg" 
                 alt="OpShare Logo" 
-                className="h-8 w-auto mr-2"
+                className="h-9 w-auto mr-2"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              <span className="text-xl font-hero text-green-600">OpShare</span>
+              <span className="text-xl font-hero font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">
+                OpShare
+              </span>
             </Link>
           </div>
 
           {/* Desktop navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/browse" className="text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Browse</Link>
-            <Link to="/how-it-works" className="text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">How It Works</Link>
-            <Link to="/community" className="text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Community</Link>
+          <div className="hidden md:flex items-center space-x-6">
+            <Link to="/browse" className="text-gray-700 hover:text-green-600 font-hero font-medium text-sm relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:w-0 after:bg-green-500 after:transition-all hover:after:w-full">Browse</Link>
+            <Link to="/how-it-works" className="text-gray-700 hover:text-green-600 font-hero font-medium text-sm relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:w-0 after:bg-green-500 after:transition-all hover:after:w-full">How It Works</Link>
+            <Link to="/community" className="text-gray-700 hover:text-green-600 font-hero font-medium text-sm relative after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:w-0 after:bg-green-500 after:transition-all hover:after:w-full">Community</Link>
             
             {isAuthenticated ? (
               <>
                 <NavbarCredits />
                 
-                <Link 
-                  to="/sell" 
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center font-hero font-medium tracking-wide uppercase text-sm"
-                >
-                  <ShoppingBag size={18} className="mr-2" />
-                  Sell
+                <Link to="/sell">
+                  <Button 
+                    className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white shadow-sm hover:shadow-md transition-all"
+                    size="sm"
+                  >
+                    <ShoppingBag size={16} className="mr-2" />
+                    Sell
+                  </Button>
                 </Link>
                 
-                {/* User profile dropdown */}
-                <div className="relative">
-                  <button 
-                    onClick={() => setIsProfileOpen(!isProfileOpen)}
-                    className="flex items-center space-x-2 text-gray-700 hover:text-green-600 focus:outline-none"
-                  >
-                    {user?.avatar ? (
-                      <img 
-                        src={user.avatar} 
-                        alt={user.name} 
-                        className="h-8 w-8 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                        <User size={16} />
-                      </div>
-                    )}
-                    <span className="font-hero">{user?.name || 'User'}</span>
-                  </button>
-                  
-                  {isProfileOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-                      <Link 
-                        to="/dashboard" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
+                {/* User profile dropdown using Shadcn DropdownMenu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center space-x-2 text-gray-700 hover:text-green-600 focus:outline-none px-1 focus:bg-transparent">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.avatar} alt={user?.name || "User"} />
+                        <AvatarFallback className="bg-green-100 text-green-700">
+                          {user?.name?.charAt(0) || <User size={16} />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-hero">{user?.name || 'User'}</span>
+                      <ChevronDown size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="cursor-pointer">
                         Dashboard
                       </Link>
-                      {isAdmin && (
-                        <Link 
-                          to="/admin/dashboard" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
-                          onClick={() => setIsProfileOpen(false)}
-                        >
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/dashboard" className="cursor-pointer">
+                          <Shield size={16} className="mr-2 text-purple-600" />
                           Admin Panel
                         </Link>
-                      )}
-                      <Link 
-                        to="/missions" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <div className="flex items-center">
-                          <Award size={16} className="mr-2" />
-                          Missions & Rewards
-                        </div>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/missions" className="cursor-pointer">
+                        <Award size={16} className="mr-2 text-amber-600" />
+                        Missions & Rewards
                       </Link>
-                      <Link 
-                        to="/settings" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        <div className="flex items-center">
-                          <Settings size={16} className="mr-2" />
-                          Settings
-                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings" className="cursor-pointer">
+                        <Settings size={16} className="mr-2 text-gray-600" />
+                        Settings
                       </Link>
-                      <button 
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
-                      >
-                        <div className="flex items-center">
-                          <LogOut size={16} className="mr-2" />
-                          Sign Out
-                        </div>
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
+                      <LogOut size={16} className="mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
-                <Link to="/signin" className="text-gray-700 hover:text-green-600 font-hero">Sign In</Link>
-                <Link to="/signup" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-hero">Sign Up</Link>
+                <Link to="/signin">
+                  <Button variant="ghost" className="text-gray-700 hover:text-green-600 font-hero">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white shadow-sm hover:shadow-md transition-all">
+                    Sign Up
+                  </Button>
+                </Link>
               </>
             )}
           </div>
@@ -135,67 +134,91 @@ const Navbar = () => {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             {isAuthenticated && <NavbarCredits />}
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="ml-2">
+            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)} className="ml-2 text-gray-700">
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-md">
+        <div className="md:hidden bg-white shadow-lg rounded-b-lg border-t border-gray-100 overflow-hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link to="/browse" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Browse</Link>
-            <Link to="/how-it-works" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">How It Works</Link>
-            <Link to="/community" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Community</Link>
+            <Link to="/browse" className="block px-4 py-2.5 text-gray-700 hover:bg-gray-50 font-hero font-medium text-sm rounded-md">Browse</Link>
+            <Link to="/how-it-works" className="block px-4 py-2.5 text-gray-700 hover:bg-gray-50 font-hero font-medium text-sm rounded-md">How It Works</Link>
+            <Link to="/community" className="block px-4 py-2.5 text-gray-700 hover:bg-gray-50 font-hero font-medium text-sm rounded-md">Community</Link>
             
             {isAuthenticated ? (
               <>
-                <div className="px-3 py-2 border-t border-gray-200 mt-2">
+                <div className="px-3 py-3 border-t border-gray-200 mt-2 space-y-2">
                   <div className="flex items-center space-x-3 mb-3">
-                    {user?.avatar ? (
-                      <img 
-                        src={user.avatar} 
-                        alt={user.name} 
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                        <User size={20} />
-                      </div>
-                    )}
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={user?.avatar} alt={user?.name || "User"} />
+                      <AvatarFallback className="bg-green-100 text-green-700">
+                        {user?.name?.charAt(0) || <User size={20} />}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <div className="font-hero font-medium">{user?.name || 'User'}</div>
                       <div className="text-sm text-gray-500 font-hero">{user?.email}</div>
                     </div>
                   </div>
                   
-                  <Link to="/sell" className="block px-3 py-2 bg-green-50 text-green-600 rounded-md mb-2 font-hero font-medium tracking-wide uppercase text-sm">
-                    <div className="flex items-center">
-                      <ShoppingBag size={18} className="mr-2" />
+                  <Link to="/sell">
+                    <Button 
+                      className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white shadow-sm hover:shadow-md transition-all"
+                      size="sm"
+                    >
+                      <ShoppingBag size={16} className="mr-2" />
                       Sell
-                    </div>
+                    </Button>
                   </Link>
-                  <Link to="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Dashboard</Link>
+                  
+                  <Link to="/dashboard" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 font-hero font-medium text-sm rounded-md">
+                    Dashboard
+                  </Link>
+                  
                   {isAdmin && (
-                    <Link to="/admin/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Admin Panel</Link>
+                    <Link to="/admin/dashboard" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 font-hero font-medium text-sm rounded-md">
+                      <Shield size={16} className="mr-2 text-purple-600" />
+                      Admin Panel
+                    </Link>
                   )}
-                  <Link to="/missions" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Missions & Rewards</Link>
-                  <Link to="/settings" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Settings</Link>
-                  <button 
+                  
+                  <Link to="/missions" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 font-hero font-medium text-sm rounded-md">
+                    <Award size={16} className="mr-2 text-amber-600" />
+                    Missions & Rewards
+                  </Link>
+                  
+                  <Link to="/settings" className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-gray-50 font-hero font-medium text-sm rounded-md">
+                    <Settings size={16} className="mr-2 text-gray-600" />
+                    Settings
+                  </Link>
+                  
+                  <Button 
                     onClick={handleLogout}
-                    className="block w-full text-left px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm"
+                    variant="ghost" 
+                    className="w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700 font-hero font-medium text-sm"
                   >
+                    <LogOut size={16} className="mr-2" />
                     Sign Out
-                  </button>
+                  </Button>
                 </div>
               </>
             ) : (
-              <>
-                <Link to="/signin" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Sign In</Link>
-                <Link to="/signup" className="block px-3 py-2 bg-green-600 text-white rounded-md font-hero font-medium tracking-wide uppercase text-sm">Sign Up</Link>
-              </>
+              <div className="px-3 py-3 flex flex-col space-y-2">
+                <Link to="/signin">
+                  <Button variant="outline" className="w-full font-hero">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white shadow-sm hover:shadow-md transition-all font-hero">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         </div>
