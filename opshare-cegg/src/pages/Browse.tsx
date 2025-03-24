@@ -292,9 +292,9 @@ const Browse = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero section with search */}
-      <div className="bg-gradient-to-r from-green-600 to-green-700 py-12">
+      <div className="bg-gradient-to-r from-green-600 to-green-700 py-8 md:py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-5xl font-bold text-center text-white mb-6">Browse Items</h1>
+          <h1 className="text-3xl md:text-5xl font-bold text-center text-white mb-6">Browse Items</h1>
           <div className="relative max-w-2xl mx-auto">
             <input
               type="text"
@@ -309,12 +309,12 @@ const Browse = () => {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
         {/* Category tabs */}
-        <div className="flex overflow-x-auto pb-2 mb-6 scrollbar-hide">
+        <div className="flex overflow-x-auto pb-2 mb-4 md:mb-6 scrollbar-hide">
           <button
             onClick={() => handleCategoryChange('All')}
-            className={`px-4 py-2 rounded-full whitespace-nowrap mr-2 ${
+            className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-full whitespace-nowrap mr-2 ${
               selectedCategory === 'All'
                 ? 'bg-green-600 text-white'
                 : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -326,7 +326,7 @@ const Browse = () => {
             <button
               key={cat}
               onClick={() => handleCategoryChange(cat)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap mr-2 ${
+              className={`flex-shrink-0 px-3 sm:px-4 py-2 rounded-full whitespace-nowrap mr-2 ${
                 selectedCategory === cat
                   ? 'bg-green-600 text-white'
                   : 'bg-white text-gray-700 hover:bg-gray-100'
@@ -338,7 +338,7 @@ const Browse = () => {
         </div>
 
         {/* Filters and results */}
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Filters sidebar */}
           <div className="w-full md:w-64 flex-shrink-0">
             <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
@@ -410,7 +410,7 @@ const Browse = () => {
 
           {/* Results grid */}
           <div className="flex-grow">
-            <div className="mb-4 flex justify-between items-center">
+            <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
               <p className="text-gray-600">
                 {loading ? 'Loading...' : `${filteredProducts.length} items found`}
               </p>
@@ -466,7 +466,7 @@ const Browse = () => {
 
             {/* Results grid */}
             {!loading && !error && filteredProducts.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {filteredProducts.map((product) => (
                   <div 
                     key={product.id} 
@@ -488,7 +488,7 @@ const Browse = () => {
                       </button>
                     )}
                     
-                    <div className="h-48 overflow-hidden relative">
+                    <div className="h-40 sm:h-48 overflow-hidden relative">
                       <img 
                         src={product.images && product.images.length > 0 ? product.images[0] : ''}
                         alt={product.title} 
@@ -517,30 +517,30 @@ const Browse = () => {
                       )}
                     </div>
                     
-                    <div className="p-4">
-                      <h3 className="font-medium text-lg mb-1 line-clamp-1">{product.title}</h3>
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
+                    <div className="p-3 sm:p-4">
+                      <h3 className="font-medium text-base sm:text-lg mb-1 line-clamp-1">{product.title}</h3>
+                      <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">{product.description}</p>
                       
-                      <div className="flex justify-between items-center mb-3">
+                      <div className="flex justify-between items-center mb-2 sm:mb-3">
                         <div className="flex items-center text-green-600 font-medium">
-                          <DollarSign size={16} className="mr-1" />
+                          <DollarSign size={14} className="mr-1" />
                           <span>{product.price}</span>
-                          <span className="text-gray-500 font-normal ml-1">/{product.rentalPeriod}</span>
+                          <span className="text-gray-500 font-normal ml-1 text-xs sm:text-sm">/{product.rentalPeriod}</span>
                         </div>
                         <div className="flex items-center text-amber-500">
-                          <Star size={16} className="mr-1" fill="currentColor" />
+                          <Star size={14} className="mr-1" fill="currentColor" />
                           <span>{product.rating}</span>
                           <span className="text-gray-500 text-xs ml-1">({product.reviews})</span>
                         </div>
                       </div>
                       
-                      <div className="flex justify-between text-sm text-gray-500">
+                      <div className="flex justify-between text-xs sm:text-sm text-gray-500">
                         <div className="flex items-center">
-                          <MapPin size={14} className="mr-1" />
+                          <MapPin size={12} className="mr-1" />
                           <span>{product.distance} miles</span>
                         </div>
                         <div className="flex items-center">
-                          <Clock size={14} className="mr-1" />
+                          <Clock size={12} className="mr-1" />
                           <span>Available Now</span>
                         </div>
                       </div>
@@ -555,21 +555,21 @@ const Browse = () => {
 
       {/* Product detail modal */}
       {selectedProduct && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 sm:p-4">
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white z-10 flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-bold">{selectedProduct.title}</h2>
+            <div className="sticky top-0 bg-white z-10 flex justify-between items-center p-3 sm:p-4 border-b">
+              <h2 className="text-lg sm:text-xl font-bold truncate pr-2">{selectedProduct.title}</h2>
               <button 
                 onClick={closeProductDetail}
-                className="p-1 rounded-full hover:bg-gray-100"
+                className="p-1 rounded-full hover:bg-gray-100 flex-shrink-0"
               >
                 <X size={24} />
               </button>
             </div>
             
-            <div className="p-6">
+            <div className="p-3 sm:p-6">
               {/* Image gallery */}
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <div className="aspect-video rounded-lg overflow-hidden mb-2">
                   <img 
                     src={selectedProduct.images[0]} 
@@ -581,7 +581,7 @@ const Browse = () => {
                   {selectedProduct.images.map((image, index) => (
                     <div 
                       key={index}
-                      className="w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border-2 border-green-600 cursor-pointer"
+                      className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-md overflow-hidden border-2 border-green-600 cursor-pointer"
                     >
                       <img 
                         src={image} 
@@ -594,30 +594,30 @@ const Browse = () => {
               </div>
               
               {/* Product details */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 <div className="md:col-span-2">
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-4">
                     <div className="flex items-center text-amber-500">
-                      <Star size={20} className="mr-1" fill="currentColor" />
+                      <Star size={18} className="mr-1" fill="currentColor" />
                       <span className="font-medium">{selectedProduct.rating}</span>
                       <span className="text-gray-500 ml-1">({selectedProduct.reviews} reviews)</span>
                     </div>
                     <div className="flex items-center text-gray-600">
-                      <MapPin size={20} className="mr-1" />
-                      <span>{selectedProduct.location} ({selectedProduct.distance} miles away)</span>
+                      <MapPin size={18} className="mr-1" />
+                      <span className="text-sm">{selectedProduct.location} ({selectedProduct.distance} miles away)</span>
                     </div>
                   </div>
                   
-                  <div className="mb-6">
+                  <div className="mb-4 sm:mb-6">
                     <h4 className="font-medium mb-2">Description</h4>
-                    <p className="text-gray-700">{selectedProduct.description}</p>
+                    <p className="text-gray-700 text-sm sm:text-base">{selectedProduct.description}</p>
                   </div>
                   
-                  <div className="mb-6">
+                  <div className="mb-4 sm:mb-6">
                     <h4 className="font-medium mb-2">Features</h4>
-                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {selectedProduct.features && selectedProduct.features.map((feature, index) => (
-                        <li key={index} className="flex items-center text-gray-700">
+                        <li key={index} className="flex items-center text-gray-700 text-sm">
                           <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
                           {feature}
                         </li>
@@ -633,22 +633,22 @@ const Browse = () => {
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600 mb-1">
-                    ${selectedProduct.price}<span className="text-gray-500 text-base font-normal">/{selectedProduct.rentalPeriod}</span>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                  <div className="text-xl sm:text-2xl font-bold text-green-600 mb-1">
+                    ${selectedProduct.price}<span className="text-gray-500 text-sm sm:text-base font-normal">/{selectedProduct.rentalPeriod}</span>
                   </div>
                   
-                  <div className="border-t border-b py-4 my-4">
+                  <div className="border-t border-b py-3 sm:py-4 my-3 sm:my-4">
                     <div className="flex items-center mb-3">
                       <img 
                         src={selectedProduct.seller.image} 
                         alt={selectedProduct.seller.name} 
-                        className="w-10 h-10 rounded-full mr-3"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-3"
                       />
                       <div>
                         <div className="font-medium">{selectedProduct.seller.name}</div>
-                        <div className="flex items-center text-sm">
-                          <Star size={14} className="text-amber-500 mr-1" fill="currentColor" />
+                        <div className="flex items-center text-xs sm:text-sm">
+                          <Star size={12} className="text-amber-500 mr-1" fill="currentColor" />
                           <span>{selectedProduct.seller.rating}</span>
                           {selectedProduct.seller.verified && (
                             <span className="ml-2 text-green-600 text-xs font-medium">Verified</span>
@@ -656,15 +656,15 @@ const Browse = () => {
                         </div>
                       </div>
                     </div>
-                    <button className="w-full text-green-600 border border-green-600 py-2 rounded-lg font-medium hover:bg-green-50">
+                    <button className="w-full text-green-600 border border-green-600 py-2 rounded-lg font-medium hover:bg-green-50 text-sm sm:text-base">
                       View Profile
                     </button>
                   </div>
                   
-                  <button className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium mb-3">
+                  <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 sm:py-3 rounded-lg font-medium mb-2 sm:mb-3 text-sm sm:text-base">
                     {selectedProduct.listingType === 'rent' ? 'Rent Now' : 'Buy Now'}
                   </button>
-                  <button className="w-full border py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100">
+                  <button className="w-full border py-2 sm:py-3 rounded-lg font-medium text-gray-700 hover:bg-gray-100 text-sm sm:text-base">
                     Message
                   </button>
                 </div>

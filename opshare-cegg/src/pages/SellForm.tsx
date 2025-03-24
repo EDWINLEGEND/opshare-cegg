@@ -157,45 +157,57 @@ const SellForm = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="min-h-screen bg-gray-50 pb-12">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center">
+          <Link to="/dashboard" className="mr-4 text-gray-600 hover:text-gray-900">
+            <ArrowLeft size={20} />
+          </Link>
+          <h1 className="text-xl md:text-2xl font-semibold">Create a Listing</h1>
+        </div>
+      </div>
+      
+      {/* Main content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          <div className="mb-6">
-            <Link to="/dashboard" className="flex items-center text-gray-600 hover:text-gray-900">
-              <ArrowLeft size={20} className="mr-2" />
-              Back to Dashboard
-            </Link>
-          </div>
-          
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">List Your Item</h1>
-          
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-              <div className="flex">
-                <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSubmit}>
+            {/* Error message */}
+            {error && (
+              <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4">
+                <div className="flex">
+                  <div className="flex-shrink-0 text-red-500">
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-8">
+            )}
+            
             {/* Listing type selection */}
-            <div className="bg-gray-50 p-6 rounded-xl">
-              <h2 className="text-xl font-medium text-gray-900 mb-4">What would you like to do?</h2>
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6">
+              <h2 className="text-xl font-medium text-gray-900 mb-4">Listing Type</h2>
+              <p className="text-gray-600 mb-4">
+                Choose whether you want to rent out your item or sell it outright.
+              </p>
+              
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   type="button"
                   onClick={() => setListingType('rent')}
                   className={`flex-1 p-4 rounded-lg border-2 ${
                     listingType === 'rent' 
-                      ? 'border-green bg-green-50' 
+                      ? 'border-green-600 bg-green-50' 
                       : 'border-gray-200'
                   }`}
                 >
-                  <h3 className="font-medium text-lg mb-2">Rent Out</h3>
+                  <h3 className="font-medium text-lg mb-2">Rent</h3>
                   <p className="text-sm text-gray-600">
-                    Let others use your item temporarily and earn recurring income
+                    Lend your item to others for a period of time
                   </p>
                 </button>
                 
@@ -204,7 +216,7 @@ const SellForm = () => {
                   onClick={() => setListingType('sell')}
                   className={`flex-1 p-4 rounded-lg border-2 ${
                     listingType === 'sell' 
-                      ? 'border-green bg-green-50' 
+                      ? 'border-green-600 bg-green-50' 
                       : 'border-gray-200'
                   }`}
                 >
@@ -217,13 +229,13 @@ const SellForm = () => {
             </div>
             
             {/* Image upload */}
-            <div className="bg-gray-50 p-6 rounded-xl">
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6">
               <h2 className="text-xl font-medium text-gray-900 mb-4">Upload Photos</h2>
               <p className="text-gray-600 mb-4">
                 Add up to 5 photos of your item. The first image will be your listing's cover photo.
               </p>
               
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 mb-4">
                 {uploadedImages.map(image => (
                   <div key={image.id} className="relative aspect-square rounded-lg overflow-hidden border">
                     <img src={image.url} alt="Uploaded" className="w-full h-full object-cover" />
@@ -240,7 +252,7 @@ const SellForm = () => {
                 {uploadedImages.length < 5 && (
                   <label className="cursor-pointer border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center aspect-square hover:bg-gray-100">
                     <Upload size={24} className="text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500">Add Photo</span>
+                    <span className="text-sm text-gray-500 text-center px-1">Add Photo</span>
                     <input 
                       type="file" 
                       className="hidden" 
@@ -254,7 +266,7 @@ const SellForm = () => {
             </div>
             
             {/* Item details */}
-            <div className="bg-gray-50 p-6 rounded-xl">
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6">
               <h2 className="text-xl font-medium text-gray-900 mb-4">Item Details</h2>
               
               <div className="space-y-4">
@@ -266,7 +278,7 @@ const SellForm = () => {
                     type="text"
                     id="title"
                     ref={titleRef}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                     placeholder="Enter a descriptive title (e.g. 'Bosch Electric Drill')"
                     required
                   />
@@ -280,13 +292,13 @@ const SellForm = () => {
                     type="text"
                     id="location"
                     ref={locationRef}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                     placeholder="Enter your location (e.g. 'Downtown, New York')"
                     required
                   />
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                       Category
@@ -294,7 +306,7 @@ const SellForm = () => {
                     <select
                       id="category"
                       ref={categoryRef}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                       required
                     >
                       <option value="">Select a category</option>
@@ -315,7 +327,7 @@ const SellForm = () => {
                     <select
                       id="condition"
                       ref={conditionRef}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                       required
                     >
                       <option value="">Select condition</option>
@@ -336,7 +348,7 @@ const SellForm = () => {
                     id="description"
                     ref={descriptionRef}
                     rows={4}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                     placeholder="Describe your item in detail. Include brand, model, features, etc."
                     required
                   ></textarea>
@@ -345,7 +357,7 @@ const SellForm = () => {
             </div>
             
             {/* Pricing */}
-            <div className="bg-gray-50 p-6 rounded-xl">
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-xl mb-6">
               <h2 className="text-xl font-medium text-gray-900 mb-4">Pricing</h2>
               
               {listingType === 'rent' ? (
@@ -365,7 +377,7 @@ const SellForm = () => {
                           ref={rentalPriceRef}
                           min="0"
                           step="0.01"
-                          className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                          className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                           placeholder="0.00"
                           required
                         />
@@ -379,7 +391,7 @@ const SellForm = () => {
                       <select
                         id="rentalPeriod"
                         ref={rentalPeriodRef}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                         required
                       >
                         <option value="hour">Hour</option>
@@ -404,7 +416,7 @@ const SellForm = () => {
                         ref={securityDepositRef}
                         min="0"
                         step="0.01"
-                        className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                        className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                         placeholder="0.00"
                       />
                     </div>
@@ -428,7 +440,7 @@ const SellForm = () => {
                       ref={salePriceRef}
                       min="0"
                       step="0.01"
-                      className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                      className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-green-600"
                       placeholder="0.00"
                       required
                     />
