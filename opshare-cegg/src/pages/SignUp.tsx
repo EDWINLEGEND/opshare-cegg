@@ -118,7 +118,7 @@ const SignUp = () => {
 
           <button 
             type="submit" 
-            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            className="w-full px-4 py-3 bg-green-600 text-white font-button font-medium rounded-lg hover:bg-green-700 transition-colors"
             disabled={loading}
           >
             {loading ? (
@@ -130,9 +130,7 @@ const SignUp = () => {
                 Creating Account...
               </>
             ) : (
-              <>
-                Create Account <ArrowRight className="ml-2 h-4 w-4" />
-              </>
+              <>Create Account <ArrowRight className="ml-2 h-4 w-4" /></>
             )}
           </button>
         </form>

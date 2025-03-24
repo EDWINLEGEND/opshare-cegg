@@ -31,15 +31,15 @@ const Navbar = () => {
                   e.currentTarget.style.display = 'none';
                 }}
               />
-              <span className="text-xl font-bold text-green-600">OpShare</span>
+              <span className="text-xl font-hero text-green-600">OpShare</span>
             </Link>
           </div>
 
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/browse" className="text-gray-700 hover:text-green-600">Browse</Link>
-            <Link to="/how-it-works" className="text-gray-700 hover:text-green-600">How It Works</Link>
-            <Link to="/community" className="text-gray-700 hover:text-green-600">Community</Link>
+            <Link to="/browse" className="text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Browse</Link>
+            <Link to="/how-it-works" className="text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">How It Works</Link>
+            <Link to="/community" className="text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Community</Link>
             
             {isAuthenticated ? (
               <>
@@ -47,7 +47,7 @@ const Navbar = () => {
                 
                 <Link 
                   to="/sell" 
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center"
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center font-hero font-medium tracking-wide uppercase text-sm"
                 >
                   <ShoppingBag size={18} className="mr-2" />
                   Sell
@@ -70,14 +70,14 @@ const Navbar = () => {
                         <User size={16} />
                       </div>
                     )}
-                    <span>{user?.name || 'User'}</span>
+                    <span className="font-hero">{user?.name || 'User'}</span>
                   </button>
                   
                   {isProfileOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
                       <Link 
                         to="/dashboard" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         Dashboard
@@ -85,7 +85,7 @@ const Navbar = () => {
                       {isAdmin && (
                         <Link 
                           to="/admin/dashboard" 
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
                           onClick={() => setIsProfileOpen(false)}
                         >
                           Admin Panel
@@ -93,7 +93,7 @@ const Navbar = () => {
                       )}
                       <Link 
                         to="/missions" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <div className="flex items-center">
@@ -103,7 +103,7 @@ const Navbar = () => {
                       </Link>
                       <Link 
                         to="/settings" 
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <div className="flex items-center">
@@ -113,7 +113,7 @@ const Navbar = () => {
                       </Link>
                       <button 
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-hero"
                       >
                         <div className="flex items-center">
                           <LogOut size={16} className="mr-2" />
@@ -126,8 +126,8 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/signin" className="text-gray-700 hover:text-green-600">Sign In</Link>
-                <Link to="/signup" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">Sign Up</Link>
+                <Link to="/signin" className="text-gray-700 hover:text-green-600 font-hero">Sign In</Link>
+                <Link to="/signup" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-hero">Sign Up</Link>
               </>
             )}
           </div>
@@ -146,9 +146,9 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-white shadow-md">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link to="/browse" className="block px-3 py-2 text-gray-700 hover:text-green-600">Browse</Link>
-            <Link to="/how-it-works" className="block px-3 py-2 text-gray-700 hover:text-green-600">How It Works</Link>
-            <Link to="/community" className="block px-3 py-2 text-gray-700 hover:text-green-600">Community</Link>
+            <Link to="/browse" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Browse</Link>
+            <Link to="/how-it-works" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">How It Works</Link>
+            <Link to="/community" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Community</Link>
             
             {isAuthenticated ? (
               <>
@@ -166,26 +166,26 @@ const Navbar = () => {
                       </div>
                     )}
                     <div>
-                      <div className="font-medium">{user?.name || 'User'}</div>
-                      <div className="text-sm text-gray-500">{user?.email}</div>
+                      <div className="font-hero font-medium">{user?.name || 'User'}</div>
+                      <div className="text-sm text-gray-500 font-hero">{user?.email}</div>
                     </div>
                   </div>
                   
-                  <Link to="/sell" className="block px-3 py-2 bg-green-50 text-green-600 rounded-md mb-2">
+                  <Link to="/sell" className="block px-3 py-2 bg-green-50 text-green-600 rounded-md mb-2 font-hero font-medium tracking-wide uppercase text-sm">
                     <div className="flex items-center">
                       <ShoppingBag size={18} className="mr-2" />
                       Sell
                     </div>
                   </Link>
-                  <Link to="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600">Dashboard</Link>
+                  <Link to="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Dashboard</Link>
                   {isAdmin && (
-                    <Link to="/admin/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600">Admin Panel</Link>
+                    <Link to="/admin/dashboard" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Admin Panel</Link>
                   )}
-                  <Link to="/missions" className="block px-3 py-2 text-gray-700 hover:text-green-600">Missions & Rewards</Link>
-                  <Link to="/settings" className="block px-3 py-2 text-gray-700 hover:text-green-600">Settings</Link>
+                  <Link to="/missions" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Missions & Rewards</Link>
+                  <Link to="/settings" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Settings</Link>
                   <button 
                     onClick={handleLogout}
-                    className="block w-full text-left px-3 py-2 text-gray-700 hover:text-green-600"
+                    className="block w-full text-left px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm"
                   >
                     Sign Out
                   </button>
@@ -193,8 +193,8 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link to="/signin" className="block px-3 py-2 text-gray-700 hover:text-green-600">Sign In</Link>
-                <Link to="/signup" className="block px-3 py-2 bg-green-600 text-white rounded-md">Sign Up</Link>
+                <Link to="/signin" className="block px-3 py-2 text-gray-700 hover:text-green-600 font-hero font-medium tracking-wide uppercase text-sm">Sign In</Link>
+                <Link to="/signup" className="block px-3 py-2 bg-green-600 text-white rounded-md font-hero font-medium tracking-wide uppercase text-sm">Sign Up</Link>
               </>
             )}
           </div>

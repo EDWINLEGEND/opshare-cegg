@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -20,7 +19,15 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
+				// Clash Display for headings
+				heading: ['Clash Display', 'sans-serif'],
+				// Archivo for body text
+				body: ['Archivo', 'sans-serif'],
+				sans: ['Archivo', 'sans-serif'],
+				// Neue Montreal for buttons
+				button: ['neue-montreal', 'sans-serif'],
+				// Hero section with Clash Display
+				hero: ['Clash Display', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

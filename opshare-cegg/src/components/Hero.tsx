@@ -19,7 +19,7 @@ const Hero = () => {
               <span className="inline-block px-4 py-1 mb-4 text-sm font-semibold text-green bg-green-50 rounded-full">
                 Sustainable Sharing Economy
               </span>
-              <h1 className="text-balance font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight text-foreground">
+              <h1 className="text-balance font-hero font-bold text-4xl md:text-5xl lg:text-6xl tracking-tight text-foreground">
                 Share Resources, <br/>
                 <span className="text-green">Reduce Waste</span>,<br/>
                 Build Community
@@ -34,14 +34,14 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 to="/sell" 
-                className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                className="px-6 py-3 bg-green-600 text-white font-button font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
               >
                 Share an Item
                 <ArrowRight size={18} />
               </Link>
               <Link 
                 to="/browse" 
-                className="px-6 py-3 bg-white text-gray-800 font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                className="px-6 py-3 bg-white text-gray-800 font-button font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
               >
                 Browse Items
               </Link>

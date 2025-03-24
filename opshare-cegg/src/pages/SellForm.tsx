@@ -454,7 +454,7 @@ const SellForm = () => {
               <button 
                 type="submit"
                 disabled={isSubmitting}
-                className={`btn-primary text-lg py-3 px-8 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className="w-full px-6 py-3 bg-green-600 text-white font-button font-medium rounded-lg hover:bg-green-700 transition-colors"
               >
                 {isSubmitting ? 'Creating Listing...' : 'Publish Listing'}
               </button>
