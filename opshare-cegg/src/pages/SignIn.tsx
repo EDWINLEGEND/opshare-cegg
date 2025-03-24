@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { getApiUrl } from '@/config/api';
 
 const SignIn = () => {
   const [email, setEmail] = useState('');
@@ -17,7 +18,7 @@ const SignIn = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(getApiUrl('api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -31,12 +32,19 @@ const SignIn = () => {
       
       // Call the login function from context with the real user data
       login({
-        id: data.user.id,
+        id: data.user.id || data.user._id, // Use either id or _id depending on what the API returns
         name: `${data.user.firstName} ${data.user.lastName}`,
         email: data.user.email,
         token: data.token,
         isAdmin: email.endsWith('@opshare.com'), // Set admin status based on email domain
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.firstName + ' ' + data.user.lastName)}&background=0D8ABC&color=fff`
+      });
+      
+      console.log('Login successful:', {
+        id: data.user.id || data.user._id,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName,
+        email: data.user.email
       });
       
       // Redirect to dashboard

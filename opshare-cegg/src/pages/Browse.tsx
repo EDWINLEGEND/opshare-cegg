@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Filter, ChevronDown, Star, MapPin, Clock, DollarSign, X, Trash2 } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import ConfirmationDialog from '@/components/common/ConfirmationDialog';
+import { getApiUrl } from '@/config/api';
 
 // Keep mock data as fallback during development
 const mockProducts = [
@@ -111,11 +112,12 @@ const Browse = () => {
           queryParams.append('search', searchTerm);
         }
         
-        // Fetch products from API
-        const response = await fetch(`http://localhost:5000/api/items?${queryParams}`);
+        // Fetch products from API using the config helper
+        const response = await fetch(getApiUrl(`api/items?${queryParams}`));
         
         if (!response.ok) {
-          throw new Error('Failed to fetch listings');
+          const errorData = await response.json().catch(() => ({ message: 'Unknown server error' }));
+          throw new Error(errorData.message || `Server error (${response.status})`);
         }
         
         const data = await response.json() as ServerItem[];
@@ -146,7 +148,12 @@ const Browse = () => {
           },
           category: item.category,
           images: item.images && item.images.length > 0 
-            ? item.images.map(img => `http://localhost:5000${img}`) 
+            ? item.images.map(img => {
+                // Check if the image URL is already a full URL (Cloudinary) or a local path
+                return img.startsWith('http') 
+                  ? img // Already a full URL (Cloudinary)
+                  : `${getApiUrl(img)}`; // Local path that needs the server prefix
+              }) 
             : ['https://via.placeholder.com/800x600?text=No+Image+Available'],
           available: item.status === 'available',
           condition: item.condition || 'Good',
@@ -170,7 +177,9 @@ const Browse = () => {
         console.error('Error fetching products:', err);
         setError('Failed to load listings. Please try again later.');
         // Fall back to mock data in development
-        setProducts(mockProducts as unknown as ProcessedItem[]);
+        if (process.env.NODE_ENV !== 'production') {
+          setProducts(mockProducts as unknown as ProcessedItem[]);
+        }
       } finally {
         setLoading(false);
       }
@@ -245,7 +254,7 @@ const Browse = () => {
         throw new Error('You must be logged in to delete a listing');
       }
       
-      const response = await fetch(`http://localhost:5000/api/items/${itemToDelete}`, {
+      const response = await fetch(getApiUrl(`api/items/${itemToDelete}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user.token}`,

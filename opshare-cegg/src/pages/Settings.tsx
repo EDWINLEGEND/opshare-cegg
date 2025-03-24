@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 import { useCreditStore } from '@/stores/useCreditStore';
@@ -21,29 +21,56 @@ import {
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
-// Mock user data - replace with actual data from your user context
-const mockUserData = {
-  name: "Alex Johnson",
-  email: "alex.johnson@example.com",
-  avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-  phone: "+1 (555) 123-4567",
-  address: "123 Main St, San Francisco, CA 94105",
-  bio: "Sustainability enthusiast and DIY hobbyist. I love sharing tools and outdoor gear with my community.",
-  occupation: "UX Designer",
-  company: "GreenTech Solutions",
-  joinDate: "January 2023",
-  verificationStatus: "verified"
-};
+// Remove mock user data as we'll use real data from context
+// const mockUserData = {
+//   name: "Alex Johnson",
+//   email: "alex.johnson@example.com",
+//   avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+//   phone: "+1 (555) 123-4567",
+//   address: "123 Main St, San Francisco, CA 94105",
+//   bio: "Sustainability enthusiast and DIY hobbyist. I love sharing tools and outdoor gear with my community.",
+//   occupation: "UX Designer",
+//   company: "GreenTech Solutions",
+//   joinDate: "January 2023",
+//   verificationStatus: "verified"
+// };
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
-  const { logout } = useUser();
+  const { user, logout } = useUser();
   const [activeTab, setActiveTab] = useState("profile");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Enhanced user data with defaults for fields not in the context
+  const [userData, setUserData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    avatar: user?.avatar || "https://randomuser.me/api/portraits/lego/1.jpg", // Default avatar
+    phone: "",
+    address: "",
+    bio: "Sustainability enthusiast",
+    occupation: "",
+    company: "",
+    joinDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    verificationStatus: "verified"
+  });
+  
+  // Update userData when user context changes
+  useEffect(() => {
+    if (user) {
+      setUserData(prevData => ({
+        ...prevData,
+        name: user.name || prevData.name,
+        email: user.email || prevData.email,
+        avatar: user.avatar || prevData.avatar,
+      }));
+    }
+    setIsLoading(false);
+  }, [user]);
   
   // Form states
-  const [userData, setUserData] = useState(mockUserData);
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
     pushNotifications: true,
@@ -83,10 +110,37 @@ const Settings: React.FC = () => {
   // Handle form submission
   const handleProfileUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been successfully updated.",
-    });
+    
+    // In a real app, you would submit the updated data to your API
+    // For now, we'll just show a toast message
+    if (user) {
+      // Here you would update the user in the backend
+      // For example: api.updateUserProfile(user.id, userData)
+      
+      // For demonstration, just show success toast
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been successfully updated.",
+      });
+      
+      // You might also want to update some fields in localStorage
+      const storedUser = localStorage.getItem('opshare_user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        const updatedUser = {
+          ...parsedUser,
+          name: userData.name,
+          // Only update fields that should be in localStorage
+        };
+        localStorage.setItem('opshare_user', JSON.stringify(updatedUser));
+      }
+    } else {
+      toast({
+        title: "Not logged in",
+        description: "You must be logged in to update your profile.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleLogout = () => {
@@ -103,6 +157,19 @@ const Settings: React.FC = () => {
     });
     // In a real app, you would trigger the account deletion process here
   };
+  
+  // Add a loading indicator at the beginning of the return
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="flex justify-center items-center space-x-2">
+          <div className="w-4 h-4 rounded-full bg-green-500 animate-bounce"></div>
+          <div className="w-4 h-4 rounded-full bg-green-500 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-4 h-4 rounded-full bg-green-500 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="bg-gray-50 min-h-screen pb-12">

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Plus, Upload, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
+import { getApiUrl } from '@/config/api';
 
 const SellForm = () => {
   const navigate = useNavigate();
@@ -121,7 +122,7 @@ const SellForm = () => {
       console.log('Submitting form data...');
       
       // Send data to server
-      const response = await fetch('http://localhost:5000/api/items', {
+      const response = await fetch(getApiUrl('api/items'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`

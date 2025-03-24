@@ -9,25 +9,27 @@ const path = require('path');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-// Configure storage for multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${uuidv4()}${ext}`);
+// Configure Cloudinary storage for multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'opshare',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
+    transformation: [{ width: 1000, crop: "limit" }] // Resize large images
   }
 });
 
@@ -47,13 +49,8 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB
 });
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
   tlsAllowInvalidCertificates: true
 })
   .then(() => console.log('MongoDB connected'))
@@ -77,6 +74,7 @@ const auth = async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log('Token verified successfully for user:', decoded.id);
+      console.log('Token payload:', decoded);
       req.userId = decoded.id;
       next();
     } catch (tokenError) {
@@ -333,8 +331,11 @@ app.post('/api/items', auth, upload.array('images', 5), async (req, res) => {
       location
     } = req.body;
     
-    // Process uploaded images
-    const imageUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+    console.log('Creating item for user:', req.userId);
+    
+    // Process uploaded images from Cloudinary
+    // Cloudinary URLs are now available in req.files
+    const imageUrls = req.files ? req.files.map(file => file.path) : [];
     
     // Set the correct price based on listing type
     const finalPrice = listingType === 'sell' ? salePrice : price;
@@ -348,15 +349,18 @@ app.post('/api/items', auth, upload.array('images', 5), async (req, res) => {
       price: finalPrice,
       listingType,
       location,
+      status: 'available', // Explicitly set status to 'available'
       rentalPeriod: listingType === 'rent' ? rentalPeriod : undefined,
       securityDeposit: listingType === 'rent' ? securityDeposit : undefined,
       images: imageUrls,
     });
     
     await newItem.save();
+    console.log(`Item created: ${newItem._id} with status: ${newItem.status}`);
     
     res.status(201).json(newItem);
   } catch (err) {
+    console.error('Error creating item:', err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });

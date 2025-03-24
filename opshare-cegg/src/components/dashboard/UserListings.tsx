@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, MessageSquare, DollarSign, Leaf, Trash2, RefreshCcw } from 'lucide-react';
+import { Eye, MessageSquare, DollarSign, Leaf, Trash2, RefreshCcw, Plus } from 'lucide-react';
+import { Link } from "react-router-dom";
 import ProductDetailsModal from './ProductDetailsModal';
 import { useUser } from '@/contexts/UserContext';
+import { getApiUrl } from '@/config/api';
 
 interface UserListingsProps {
   status?: 'active' | 'pending' | 'completed' | 'all';
@@ -47,19 +49,30 @@ const UserListings: React.FC<UserListingsProps> = ({ status = 'all' }) => {
     try {
       // Get token from localStorage directly as a backup method
       const storedUser = localStorage.getItem('opshare_user');
-      const userToken = user?.token || (storedUser ? JSON.parse(storedUser).token : null);
+      let userToken = user?.token || (storedUser ? JSON.parse(storedUser).token : null);
       
       if (!userToken) {
         throw new Error('You must be logged in to view your listings');
       }
       
-      console.log('Fetching listings with token...');
+      console.log('User object from context:', {
+        id: user?.id,
+        email: user?.email,
+        token: userToken ? `${userToken.substring(0, 15)}...` : 'missing'
+      });
       
-      const response = await fetch('http://localhost:5000/api/items/user', {
+      // Make sure we're passing a proper bearer token
+      if (!userToken.startsWith('Bearer ')) {
+        userToken = `Bearer ${userToken}`;
+      }
+      
+      console.log('Authorization header:', `${userToken.substring(0, 20)}...`);
+      
+      const response = await fetch(getApiUrl('api/items/user'), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`
+          'Authorization': userToken
         }
       });
       
@@ -74,7 +87,30 @@ const UserListings: React.FC<UserListingsProps> = ({ status = 'all' }) => {
       
       const data = await response.json();
       console.log('Fetched listings:', data);
-      setListings(Array.isArray(data) ? data : []);
+      
+      // Debug check for empty data
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        console.log('No listings found for user - empty response but not an error');
+      }
+      
+      // Handle case where API might return an object with data property instead of array directly
+      const listingsData = Array.isArray(data) ? data : 
+                         (data.data && Array.isArray(data.data)) ? data.data : [];
+      
+      console.log('Processed listings data:', listingsData);
+      
+      // Debug the transformedItems response structure from the server
+      if (listingsData.length > 0) {
+        console.log('Sample listing structure:', {
+          id: listingsData[0]._id || listingsData[0].id,
+          title: listingsData[0].title,
+          status: listingsData[0].status,
+          ownerId: typeof listingsData[0].ownerId === 'object' ? 
+            listingsData[0].ownerId._id : listingsData[0].ownerId
+        });
+      }
+      
+      setListings(listingsData);
     } catch (err) {
       console.error('Error fetching listings:', err);
       setError(err.message || 'Failed to fetch your listings');
@@ -91,7 +127,31 @@ const UserListings: React.FC<UserListingsProps> = ({ status = 'all' }) => {
   // Filter listings based on status
   const filteredListings = status === 'all' 
     ? listings 
-    : listings.filter(listing => listing.status === status);
+    : listings.filter(listing => {
+        // Map UI status terms to API status terms
+        if (status === 'active' && listing.status === 'available') return true;
+        if (status === 'pending' && listing.status === 'borrowed') return true;
+        if (status === 'completed' && listing.status === 'unavailable') return true;
+        return listing.status === status; // Fallback for exact match
+      });
+      
+  // Debug filtering results
+  console.log('Listings filtering:', {
+    status,
+    totalListings: listings.length,
+    filteredCount: filteredListings.length,
+    statuses: listings.map(l => l.status).filter((v, i, a) => a.indexOf(v) === i) // unique values
+  });
+  
+  const getStatusDisplay = (apiStatus) => {
+    // Map from API status to display status
+    switch(apiStatus) {
+      case 'available': return 'Active';
+      case 'borrowed': return 'Pending';
+      case 'unavailable': return 'Completed';
+      default: return apiStatus.charAt(0).toUpperCase() + apiStatus.slice(1);
+    }
+  };
   
   const openProductDetails = (product: any) => {
     setSelectedProduct(product);
@@ -118,11 +178,16 @@ const UserListings: React.FC<UserListingsProps> = ({ status = 'all' }) => {
           throw new Error('You must be logged in to delete a listing');
         }
         
-        const response = await fetch(`http://localhost:5000/api/items/${listingId}`, {
+        // Make sure we're passing a proper bearer token
+        const authHeader = userToken.startsWith('Bearer ') 
+          ? userToken 
+          : `Bearer ${userToken}`;
+        
+        const response = await fetch(getApiUrl(`api/items/${listingId}`), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`
+            'Authorization': authHeader
           }
         });
         
@@ -183,10 +248,25 @@ const UserListings: React.FC<UserListingsProps> = ({ status = 'all' }) => {
   if (filteredListings.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-        <p className="text-gray-500 mb-4">No {status} listings found.</p>
-        {status !== 'active' && (
-          <Button variant="outline">View All Listings</Button>
-        )}
+        <p className="text-gray-500 mb-3">No {status} listings found.</p>
+        <p className="text-sm text-gray-400 mb-4">
+          {status === 'active' 
+            ? "Items that are available for rent or sale will appear here."
+            : status === 'pending' 
+              ? "Items that are currently borrowed will appear here."
+              : status === 'completed' 
+                ? "Items that have been marked as unavailable will appear here."
+                : "Your listings will appear here once you create them."
+          }
+        </p>
+        
+        <Link 
+          to="/sell" 
+          className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          <Plus size={18} className="mr-2" />
+          Create New Listing
+        </Link>
       </div>
     );
   }
@@ -216,7 +296,9 @@ const UserListings: React.FC<UserListingsProps> = ({ status = 'all' }) => {
             <div className="w-24 h-24 sm:w-36 sm:h-36 flex-shrink-0">
               <img 
                 src={listing.images && listing.images.length > 0 
-                  ? `http://localhost:5000${listing.images[0]}` 
+                  ? (listing.images[0].startsWith('http') 
+                      ? listing.images[0] 
+                      : getApiUrl(listing.images[0])) 
                   : 'https://via.placeholder.com/300?text=No+Image'}
                 alt={listing.title} 
                 className="w-full h-full object-cover"
@@ -237,11 +319,11 @@ const UserListings: React.FC<UserListingsProps> = ({ status = 'all' }) => {
                 <Badge variant={
                   listing.status === 'available' 
                     ? 'secondary' 
-                    : listing.status === 'pending' 
+                    : listing.status === 'borrowed' 
                       ? 'outline' 
                       : 'secondary'
                 }>
-                  {listing.status}
+                  {getStatusDisplay(listing.status)}
                 </Badge>
               </div>
               

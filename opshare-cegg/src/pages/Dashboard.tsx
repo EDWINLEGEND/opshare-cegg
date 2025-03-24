@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { useUser } from '../contexts/UserContext';
@@ -24,6 +24,7 @@ import CreditSummary from "@/components/dashboard/CreditSummary";
 
 const Dashboard = () => {
   const { user } = useUser();
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   const { 
     treeCoins, 
     leafs, 
@@ -37,6 +38,18 @@ const Dashboard = () => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
   const [missionFilter, setMissionFilter] = useState<MissionType | 'all'>('all');
+
+  // Add effect to check if user is loaded
+  useEffect(() => {
+    // Log user details for debugging
+    console.log('Dashboard - User state:', { 
+      isAuthenticated: !!user,
+      id: user?.id, 
+      email: user?.email,
+      tokenExists: !!user?.token
+    });
+    setIsLoadingUser(false);
+  }, [user]);
 
   // For demo purposes: Mock financial data
   const financialData = {
@@ -247,7 +260,7 @@ const Dashboard = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <UserListings />
+                    <UserListings status="active" />
                   </CardContent>
                 </Card>
                 

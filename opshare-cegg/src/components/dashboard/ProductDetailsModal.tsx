@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Eye, MessageSquare, Leaf, DollarSign, Calendar, MapPin, User, Clock } from 'lucide-react';
+import { getApiUrl } from '@/config/api';
 
 interface ProductDetailsModalProps {
   product: any; // Replace with proper product type
@@ -38,7 +39,11 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
           {/* Product Image */}
           <div className="rounded-md overflow-hidden">
             <img 
-              src={product.image} 
+              src={product.images && product.images.length > 0 
+                ? (product.images[0].startsWith('http')
+                    ? product.images[0]
+                    : getApiUrl(product.images[0]))
+                : product.image || 'https://via.placeholder.com/300?text=No+Image'} 
               alt={product.title} 
               className="w-full h-auto max-h-[300px] object-cover"
             />
