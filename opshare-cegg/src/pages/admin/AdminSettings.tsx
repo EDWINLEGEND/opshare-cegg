@@ -10,16 +10,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const AdminSettings = () => {
   return (
     <AdminLayout>
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <h1 className="text-2xl font-bold mb-6">Admin Settings</h1>
         
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="general">General Settings</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="api">API Keys</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2">
+            <TabsList className="mb-4">
+              <TabsTrigger value="general">General Settings</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
+              <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              <TabsTrigger value="api">API Keys</TabsTrigger>
+            </TabsList>
+          </div>
           
           <TabsContent value="general">
             <Card>
@@ -38,7 +40,7 @@ const AdminSettings = () => {
                   <Input id="support-email" type="email" defaultValue="support@opshare.com" />
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="maintenance-mode">Maintenance Mode</Label>
                     <p className="text-sm text-gray-500">Take the site offline for maintenance</p>
@@ -46,7 +48,7 @@ const AdminSettings = () => {
                   <Switch id="maintenance-mode" />
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="new-registrations">Allow New Registrations</Label>
                     <p className="text-sm text-gray-500">Enable user registration</p>
@@ -67,7 +69,7 @@ const AdminSettings = () => {
                 <CardDescription>Configure security and authorization settings</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="two-factor">Require Two-Factor Authentication</Label>
                     <p className="text-sm text-gray-500">Enforce 2FA for admin accounts</p>
@@ -75,7 +77,7 @@ const AdminSettings = () => {
                   <Switch id="two-factor" defaultChecked />
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="password-expiry">Password Expiry</Label>
                     <p className="text-sm text-gray-500">Force password resets every 90 days</p>
@@ -101,7 +103,7 @@ const AdminSettings = () => {
                 <CardDescription>Configure administrator notifications</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="notify-new-users">New User Registrations</Label>
                     <p className="text-sm text-gray-500">Get notified when new users join</p>
@@ -109,7 +111,7 @@ const AdminSettings = () => {
                   <Switch id="notify-new-users" defaultChecked />
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="notify-reports">User Reports</Label>
                     <p className="text-sm text-gray-500">Get notified about reported content</p>
@@ -117,7 +119,7 @@ const AdminSettings = () => {
                   <Switch id="notify-reports" defaultChecked />
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="notify-listings">New Listings</Label>
                     <p className="text-sm text-gray-500">Get notified about new item listings</p>
@@ -125,7 +127,7 @@ const AdminSettings = () => {
                   <Switch id="notify-listings" />
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <div className="space-y-0.5">
                     <Label htmlFor="notify-transactions">Transactions</Label>
                     <p className="text-sm text-gray-500">Get notified about new transactions</p>
@@ -148,9 +150,9 @@ const AdminSettings = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="api-key">Admin API Key</Label>
-                  <div className="flex">
-                    <Input id="api-key" defaultValue="sk_admin_2023abcdef1234567890" className="rounded-r-none" />
-                    <Button variant="outline" className="rounded-l-none">Regenerate</Button>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input id="api-key" defaultValue="sk_admin_2023abcdef1234567890" className="sm:rounded-r-none" />
+                    <Button variant="outline" className="sm:rounded-l-none">Regenerate</Button>
                   </div>
                   <p className="text-sm text-gray-500">Used for secure API access to administrative endpoints</p>
                 </div>
@@ -158,7 +160,7 @@ const AdminSettings = () => {
                 <div className="pt-4">
                   <h3 className="font-medium mb-2">Third-Party Integrations</h3>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div className="space-y-0.5">
                         <Label htmlFor="payment-integration">Payment Gateway</Label>
                         <p className="text-sm text-gray-500">Configure payment processing</p>
@@ -166,7 +168,7 @@ const AdminSettings = () => {
                       <Switch id="payment-integration" defaultChecked />
                     </div>
                     
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div className="space-y-0.5">
                         <Label htmlFor="analytics-integration">Analytics Integration</Label>
                         <p className="text-sm text-gray-500">Connect to analytics platform</p>
@@ -187,4 +189,4 @@ const AdminSettings = () => {
   );
 };
 
-export default AdminSettings; 
+export default AdminSettings;

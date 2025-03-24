@@ -44,6 +44,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { Card, CardContent } from '@/components/ui/card';
 
 // Mock user data
 const mockUsers = [
@@ -157,17 +158,17 @@ const AdminUsers = () => {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
+      <div className="p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
           <h1 className="text-2xl font-bold">User Management</h1>
           
-          <div className="flex space-x-3">
-            <div className="relative">
+          <div className="flex flex-wrap gap-3">
+            <div className="relative flex-grow max-w-[250px]">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="search"
                 placeholder="Search users..."
-                className="pl-9 w-[250px]"
+                className="pl-9 w-full"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -183,8 +184,8 @@ const AdminUsers = () => {
           </div>
         </div>
         
-        {/* User Table */}
-        <div className="bg-white rounded-md shadow-sm overflow-hidden">
+        {/* Desktop Table View (hidden on mobile) */}
+        <div className="hidden md:block bg-white rounded-md shadow-sm overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -297,6 +298,125 @@ const AdminUsers = () => {
             </TableBody>
           </Table>
         </div>
+
+        {/* Mobile Card View (hidden on desktop) */}
+        <div className="md:hidden space-y-4">
+          {filteredUsers.map((user) => (
+            <Card key={user.id} className="overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center">
+                    <Avatar className="h-10 w-10 mr-3">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-medium">{user.name}</div>
+                      <div className="text-sm text-gray-500">{user.email}</div>
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => {
+                        setSelectedUser(user);
+                        setUserDetailsOpen(true);
+                      }}>
+                        View details
+                      </DropdownMenuItem>
+                      
+                      {!user.verified && (
+                        <DropdownMenuItem onClick={() => handleUserAction(user, 'verify')}>
+                          Verify account
+                        </DropdownMenuItem>
+                      )}
+                      
+                      {user.status !== 'suspended' ? (
+                        <DropdownMenuItem 
+                          className="text-amber-600"
+                          onClick={() => handleUserAction(user, 'suspend')}
+                        >
+                          Suspend account
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem 
+                          className="text-green-600"
+                          onClick={() => handleUserAction(user, 'verify')}
+                        >
+                          Reactivate account
+                        </DropdownMenuItem>
+                      )}
+                      
+                      <DropdownMenuItem 
+                        className="text-red-600"
+                        onClick={() => handleUserAction(user, 'delete')}
+                      >
+                        Delete account
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="text-sm">
+                    <span className="text-gray-500">Status:</span>
+                    <div className="mt-1">
+                      <Badge variant={
+                        user.status === 'active' ? 'success' :
+                        user.status === 'inactive' ? 'outline' : 'destructive'
+                      }>
+                        {user.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm">
+                    <span className="text-gray-500">Role:</span>
+                    <div className="mt-1">
+                      <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                        {user.role}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm">
+                    <span className="text-gray-500">Joined:</span>
+                    <div className="mt-1">{format(new Date(user.joinDate), 'MMM d, yyyy')}</div>
+                  </div>
+                  
+                  <div className="text-sm">
+                    <span className="text-gray-500">Last Active:</span>
+                    <div className="mt-1">{format(new Date(user.lastActive), 'MMM d, yyyy')}</div>
+                  </div>
+                  
+                  <div className="text-sm">
+                    <span className="text-gray-500">Verified:</span>
+                    <div className="mt-1">
+                      {user.verified ? (
+                        <Badge variant="success" className="bg-green-100 text-green-800">Yes</Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-gray-100">No</Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm">
+                    <span className="text-gray-500">Activity:</span>
+                    <div className="mt-1">
+                      <div>{user.listings} listings</div>
+                      <div>{user.transactions} transactions</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
         
         {/* User Details Dialog */}
         <Dialog open={userDetailsOpen} onOpenChange={setUserDetailsOpen}>
@@ -329,4 +449,4 @@ const AdminUsers = () => {
   );
 };
 
-export default AdminUsers; 
+export default AdminUsers;

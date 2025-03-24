@@ -115,7 +115,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <AdminLayout>
       {/* Horizontal Navigation */}
-      <div className="flex flex-wrap gap-3 mb-8 border-b pb-4 px-2">
+      <div className="flex flex-wrap gap-3 mb-8 border-b pb-4 px-2 overflow-x-auto">
         {navItems.map(item => (
           <button
             key={item.id}
@@ -134,7 +134,7 @@ const AdminDashboard: React.FC = () => {
 
       {/* Dashboard Tab */}
       {activeTab === 'dashboard' && (
-        <div className="space-y-6">
+        <div className="space-y-6 px-2 md:px-0">
           <div>
             <h1 className="text-2xl font-bold">Admin Dashboard</h1>
             <p className="text-gray-600 mt-1">Welcome to the OpShare admin panel. Here's an overview of what's happening on the platform.</p>
@@ -177,11 +177,11 @@ const AdminDashboard: React.FC = () => {
             <Card className="overflow-hidden bg-amber-50 border-amber-200">
               <CardHeader className="pb-2 px-5 pt-5 flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-sm font-medium text-amber-800">Pending Approvals</CardTitle>
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <Shield className="h-4 w-4 text-amber-500" />
               </CardHeader>
               <CardContent className="px-5 pb-5">
-                <div className="text-2xl font-bold text-amber-700">{stats.pendingApprovals}</div>
-                <p className="text-xs text-amber-700">Items waiting for approval</p>
+                <div className="text-2xl font-bold text-amber-800">{stats.pendingApprovals}</div>
+                <p className="text-xs text-amber-800">Items awaiting approval</p>
               </CardContent>
             </Card>
             
@@ -191,8 +191,8 @@ const AdminDashboard: React.FC = () => {
                 <Flag className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent className="px-5 pb-5">
-                <div className="text-2xl font-bold text-red-700">{stats.reportedContent}</div>
-                <p className="text-xs text-red-700">Items flagged by users</p>
+                <div className="text-2xl font-bold text-red-800">{stats.reportedContent}</div>
+                <p className="text-xs text-red-800">Items reported by users</p>
               </CardContent>
             </Card>
             
@@ -210,7 +210,7 @@ const AdminDashboard: React.FC = () => {
           
           <div className="bg-white p-6 rounded-lg shadow-sm">
             <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Button 
                 variant="outline" 
                 className="bg-green-50 text-green-800 border-green-200 hover:bg-green-100 hover:text-green-900 py-3"
@@ -239,19 +239,19 @@ const AdminDashboard: React.FC = () => {
 
       {/* Users Tab */}
       {activeTab === 'users' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
+        <div className="space-y-6 px-2 md:px-0">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 className="text-2xl font-bold">User Management</h1>
             <Button className="bg-blue-600 hover:bg-blue-700">Add New User</Button>
           </div>
           
-          <div className="flex items-center justify-between bg-white p-5 rounded-lg shadow-sm">
-            <div className="relative w-64">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white p-5 rounded-lg shadow-sm gap-4">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-              <Input placeholder="Search users..." className="pl-9" />
+              <Input placeholder="Search users..." className="pl-9 w-full" />
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap gap-3">
               <Button variant="outline" size="sm">
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
@@ -263,7 +263,8 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {/* Desktop Table View (hidden on mobile) */}
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -322,15 +323,75 @@ const AdminDashboard: React.FC = () => {
               </div>
             </div>
           </div>
+          
+          {/* Mobile Card View (hidden on desktop) */}
+          <div className="md:hidden space-y-4">
+            {users.map(user => (
+              <Card key={user.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center">
+                      <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium mr-3">
+                        {user.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                    <div className="text-sm">
+                      <span className="text-gray-500">Role:</span>
+                      <div className="mt-1">
+                        <Badge className={user.role === 'Admin' ? 'bg-purple-100 text-purple-800 hover:bg-purple-100' : ''}>
+                          {user.role}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm">
+                      <span className="text-gray-500">Status:</span>
+                      <div className="mt-1">
+                        <Badge className={user.status === 'Active' 
+                          ? 'bg-green-100 text-green-800 hover:bg-green-100' 
+                          : 'bg-red-100 text-red-800 hover:bg-red-100'}>
+                          {user.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end mt-4 gap-2">
+                    <Button variant="outline" size="sm" className="h-8 px-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                      Edit
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50">
+                      {user.status === 'Active' ? 'Deactivate' : 'Activate'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-sm text-gray-500">Showing 1-5 of 1,248 users</p>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" disabled>Previous</Button>
+                <Button variant="outline" size="sm">Next</Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Listings Tab */}
       {activeTab === 'listings' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
+        <div className="space-y-6 px-2 md:px-0">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 className="text-2xl font-bold">Listings Management</h1>
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap gap-3">
               <Button variant="outline" className="flex items-center">
                 <Download className="h-4 w-4 mr-2" />
                 Export
@@ -341,10 +402,10 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex flex-wrap items-center justify-between bg-white p-5 rounded-lg shadow-sm gap-4">
-            <div className="relative w-64">
+          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between bg-white p-5 rounded-lg shadow-sm gap-4">
+            <div className="relative w-full sm:w-64">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-              <Input placeholder="Search listings..." className="pl-9" />
+              <Input placeholder="Search listings..." className="pl-9 w-full" />
             </div>
             
             <div className="flex flex-wrap gap-3">
@@ -381,7 +442,8 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {/* Desktop Table View (hidden on mobile) */}
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -441,6 +503,76 @@ const AdminDashboard: React.FC = () => {
               </table>
             </div>
             <div className="p-5 border-t flex items-center justify-between">
+              <p className="text-sm text-gray-500">Showing 1-5 of 856 listings</p>
+              <div className="flex space-x-2">
+                <Button variant="outline" size="sm" disabled>Previous</Button>
+                <Button variant="outline" size="sm">Next</Button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Mobile Card View (hidden on desktop) */}
+          <div className="md:hidden space-y-4">
+            {listings.map(listing => (
+              <Card key={listing.id} className="overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="font-medium text-base">{listing.name}</div>
+                  <div className="text-sm text-gray-500 mt-1">Owner: {listing.owner}</div>
+                  
+                  <div className="grid grid-cols-2 gap-3 mt-4">
+                    <div className="text-sm">
+                      <span className="text-gray-500">Category:</span>
+                      <div className="mt-1">
+                        <Badge variant="outline">{listing.category}</Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm">
+                      <span className="text-gray-500">Price:</span>
+                      <div className="mt-1 font-medium">${listing.price.toFixed(2)}/day</div>
+                    </div>
+                    
+                    <div className="text-sm">
+                      <span className="text-gray-500">Status:</span>
+                      <div className="mt-1">
+                        <Badge className={
+                          listing.status === 'Active' ? 'bg-green-100 text-green-800' : 
+                          'bg-gray-100 text-gray-800'
+                        }>
+                          {listing.status}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="text-sm">
+                      <span className="text-gray-500">Metrics:</span>
+                      <div className="mt-1 text-xs text-gray-600">
+                        <div className="flex items-center">
+                          <Eye className="h-3 w-3 mr-1" /> {listing.views} views
+                        </div>
+                        <div className="flex items-center mt-1">
+                          <Clock className="h-3 w-3 mr-1" /> {listing.requests} requests
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end mt-4 gap-2">
+                    <Button variant="ghost" size="sm" className="h-8 px-3 text-blue-600">
+                      <Eye className="h-4 w-4 mr-1" /> View
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-3 text-amber-600">
+                      <Edit className="h-4 w-4 mr-1" /> Edit
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8 px-3 text-red-600">
+                      <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            
+            <div className="flex items-center justify-between pt-2">
               <p className="text-sm text-gray-500">Showing 1-5 of 856 listings</p>
               <div className="flex space-x-2">
                 <Button variant="outline" size="sm" disabled>Previous</Button>
