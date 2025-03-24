@@ -16,6 +16,7 @@ const SellForm = () => {
   const categoryRef = useRef(null);
   const conditionRef = useRef(null);
   const descriptionRef = useRef(null);
+  const locationRef = useRef(null);
   const rentalPriceRef = useRef(null);
   const rentalPeriodRef = useRef(null);
   const securityDepositRef = useRef(null);
@@ -50,6 +51,31 @@ const SellForm = () => {
     }
     
     try {
+      // Validate form inputs
+      if (!titleRef.current.value) {
+        setError('Please enter a title');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!categoryRef.current.value) {
+        setError('Please select a category');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!conditionRef.current.value) {
+        setError('Please select an item condition');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      if (!locationRef.current.value) {
+        setError('Please enter a location');
+        setIsSubmitting(false);
+        return;
+      }
+      
       // Create form data object
       const formData = new FormData();
       
@@ -59,21 +85,40 @@ const SellForm = () => {
       formData.append('condition', conditionRef.current.value);
       formData.append('description', descriptionRef.current.value);
       formData.append('listingType', listingType);
+      formData.append('location', locationRef.current.value);
       
       if (listingType === 'rent') {
+        if (!rentalPriceRef.current.value) {
+          setError('Please enter a rental price');
+          setIsSubmitting(false);
+          return;
+        }
         formData.append('price', rentalPriceRef.current.value);
         formData.append('rentalPeriod', rentalPeriodRef.current.value);
         if (securityDepositRef.current.value) {
           formData.append('securityDeposit', securityDepositRef.current.value);
         }
       } else {
-        formData.append('salePrice', salePriceRef.current.value);
+        if (!salePriceRef.current.value) {
+          setError('Please enter a sale price');
+          setIsSubmitting(false);
+          return;
+        }
+        formData.append('price', salePriceRef.current.value);
       }
       
       // Add image files
+      if (uploadedImages.length === 0) {
+        setError('Please upload at least one image');
+        setIsSubmitting(false);
+        return;
+      }
+      
       uploadedImages.forEach(image => {
         formData.append('images', image.file);
       });
+      
+      console.log('Submitting form data...');
       
       // Send data to server
       const response = await fetch('http://localhost:5000/api/items', {
@@ -87,14 +132,25 @@ const SellForm = () => {
       const data = await response.json();
       
       if (!response.ok) {
+        // Log the full error response for debugging
+        console.error('Server error response:', data);
         throw new Error(data.message || 'Failed to create listing');
       }
       
-      // Redirect to browse page
-      navigate('/browse');
+      // Log successful listing creation
+      console.log('Listing created successfully:', data);
+      
+      // Wait a brief moment to ensure the server has processed the request
+      setTimeout(() => {
+        // Redirect to browse page
+        console.log('Redirecting to browse page...');
+        navigate('/browse');
+      }, 500);
     } catch (err) {
+      // Log the full error for debugging
+      console.error('Complete error details:', err);
+      
       setError(err.message || 'Something went wrong. Please try again.');
-      console.error('Error creating listing:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -212,6 +268,20 @@ const SellForm = () => {
                     ref={titleRef}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
                     placeholder="Enter a descriptive title (e.g. 'Bosch Electric Drill')"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    id="location"
+                    ref={locationRef}
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
+                    placeholder="Enter your location (e.g. 'Downtown, New York')"
                     required
                   />
                 </div>

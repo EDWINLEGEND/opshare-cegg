@@ -51,21 +51,44 @@ const upload = multer({
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  tlsAllowInvalidCertificates: true
+})
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.log('MongoDB connection error:', err));
 
 // Middleware for authentication
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ message: 'Authentication required' });
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
-    next();
+    const authHeader = req.header('Authorization');
+    console.log('Auth header:', authHeader ? `${authHeader.substring(0, 15)}...` : 'missing');
+    
+    if (!authHeader) {
+      return res.status(401).json({ message: 'Authentication required: No Authorization header' });
+    }
+    
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ message: 'Authentication required: No token found' });
+    }
+    
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('Token verified successfully for user:', decoded.id);
+      req.userId = decoded.id;
+      next();
+    } catch (tokenError) {
+      console.error('Token verification failed:', tokenError.message);
+      return res.status(401).json({ 
+        message: 'Authentication failed: Invalid token', 
+        error: tokenError.message 
+      });
+    }
   } catch (err) {
-    res.status(401).json({ message: 'Authentication failed', error: err.message });
+    console.error('Auth middleware error:', err);
+    res.status(500).json({ message: 'Server error in authentication', error: err.message });
   }
 };
 
@@ -88,15 +111,15 @@ const ItemSchema = new mongoose.Schema({
   category: { type: String, required: true },
   condition: { type: String, required: true },
   price: { type: Number, required: true },
+  listingType: { type: String, enum: ['rent', 'sell'], default: 'rent' },
   rentalPeriod: { type: String, enum: ['hour', 'day', 'week', 'month'], default: 'day' },
   securityDeposit: { type: Number },
-  listingType: { type: String, enum: ['rent', 'sell'], default: 'rent' },
   status: { type: String, enum: ['available', 'borrowed', 'unavailable'], default: 'available' },
   images: [{ type: String }],
-  location: { type: String, default: 'Local Area' },
+  location: { type: String, required: true },
   distance: { type: Number, default: 0 },
-  rating: { type: Number, default: 5 },
-  reviews: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
 const Item = mongoose.model('Item', ItemSchema);
@@ -203,44 +226,56 @@ app.patch('/api/users/:id', auth, async (req, res) => {
 
 // ITEM ENDPOINTS
 
-// Create a new item with image upload
-app.post('/api/items', auth, upload.array('images', 5), async (req, res) => {
+// Get items owned by current logged-in user (MUST be before the :id route)
+app.get('/api/items/user', auth, async (req, res) => {
   try {
-    const { 
-      title, 
-      description, 
-      category, 
-      condition,
-      price, 
-      listingType,
-      rentalPeriod,
-      securityDeposit,
-      salePrice
-    } = req.body;
+    console.log('Fetching items for user ID:', req.userId);
     
-    // Process uploaded images
-    const imageUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+    // Validate that req.userId is a valid ObjectId
+    if (!mongoose.Types.ObjectId.isValid(req.userId)) {
+      console.error('Invalid user ID format:', req.userId);
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
     
-    // Set the correct price based on listing type
-    const finalPrice = listingType === 'sell' ? salePrice : price;
+    // Find all items owned by the authenticated user
+    const items = await Item.find({ ownerId: req.userId })
+      .populate({
+        path: 'ownerId',
+        select: 'firstName lastName',
+        model: 'User'
+      })
+      .sort({ createdAt: -1 }); // Sort by newest first
     
-    const newItem = new Item({
-      ownerId: req.userId,
-      title,
-      description,
-      category,
-      condition,
-      price: finalPrice,
-      listingType,
-      rentalPeriod: listingType === 'rent' ? rentalPeriod : undefined,
-      securityDeposit: listingType === 'rent' ? securityDeposit : undefined,
-      images: imageUrls,
-    });
+    console.log(`Found ${items.length} items for user ${req.userId}`);
     
-    await newItem.save();
+    // Transform the output to match what the frontend expects
+    const transformedItems = items.map(item => ({
+      _id: item._id,
+      id: item._id, // Add an alias since frontend uses both
+      title: item.title,
+      description: item.description,
+      category: item.category,
+      condition: item.condition,
+      price: item.price,
+      rentalPeriod: item.rentalPeriod,
+      securityDeposit: item.securityDeposit,
+      status: item.status,
+      images: item.images,
+      location: item.location,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+      // Format the seller information
+      seller: {
+        id: item.ownerId._id,
+        name: `${item.ownerId.firstName} ${item.ownerId.lastName}`,
+        firstName: item.ownerId.firstName,
+        lastName: item.ownerId.lastName
+      }
+    }));
     
-    res.status(201).json(newItem);
+    res.status(200).json(transformedItems);
   } catch (err) {
+    console.error('Error in /api/items/user endpoint:', err);
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
@@ -282,10 +317,54 @@ app.get('/api/items/:id', async (req, res) => {
   }
 });
 
+// Create a new item with image upload
+app.post('/api/items', auth, upload.array('images', 5), async (req, res) => {
+  try {
+    const { 
+      title, 
+      description, 
+      category, 
+      condition,
+      price, 
+      listingType,
+      rentalPeriod,
+      securityDeposit,
+      salePrice,
+      location
+    } = req.body;
+    
+    // Process uploaded images
+    const imageUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+    
+    // Set the correct price based on listing type
+    const finalPrice = listingType === 'sell' ? salePrice : price;
+    
+    const newItem = new Item({
+      ownerId: req.userId,
+      title,
+      description,
+      category,
+      condition,
+      price: finalPrice,
+      listingType,
+      location,
+      rentalPeriod: listingType === 'rent' ? rentalPeriod : undefined,
+      securityDeposit: listingType === 'rent' ? securityDeposit : undefined,
+      images: imageUrls,
+    });
+    
+    await newItem.save();
+    
+    res.status(201).json(newItem);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
 // Update an item
 app.patch('/api/items/:id', auth, async (req, res) => {
   try {
-    const { title, description, category, condition, price, listingType, rentalPeriod, securityDeposit, salePrice } = req.body;
+    const { title, description, category, condition, price, listingType, rentalPeriod, securityDeposit, salePrice, location } = req.body;
     
     // Find the item first to check ownership
     const item = await Item.findById(req.params.id);
@@ -296,7 +375,7 @@ app.patch('/api/items/:id', auth, async (req, res) => {
       return res.status(403).json({ message: "Not authorized to update this item" });
     }
     
-    const updates = { title, description, category, condition, price, listingType, rentalPeriod, securityDeposit, salePrice };
+    const updates = { title, description, category, condition, price, listingType, rentalPeriod, securityDeposit, salePrice, location };
     
     // Remove undefined fields
     Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);

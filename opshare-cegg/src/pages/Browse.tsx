@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Filter, ChevronDown, Star, MapPin, Clock, DollarSign, X } from 'lucide-react';
+import { Search, Filter, ChevronDown, Star, MapPin, Clock, DollarSign, X, Trash2 } from 'lucide-react';
+import { useUser } from '@/contexts/UserContext';
+import ConfirmationDialog from '@/components/common/ConfirmationDialog';
 
 // Keep mock data as fallback during development
 const mockProducts = [
@@ -71,18 +73,27 @@ interface ProcessedItem {
 const Browse = () => {
   const { category } = useParams();
   const navigate = useNavigate();
+  const { user } = useUser(); // Add user context
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(category || 'All');
   const [showFilters, setShowFilters] = useState(false);
   const [maxDistance, setMaxDistance] = useState(10);
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [selectedProduct, setSelectedProduct] = useState<ProcessedItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false); // For tracking delete operation
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null); // Track which item is being deleted
   
   // New state for API data
   const [products, setProducts] = useState<ProcessedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [realCategories, setRealCategories] = useState<string[]>(['All']);
+  
+  // State for confirmation dialog
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   
   // Fetch products from API
   useEffect(() => {
@@ -92,7 +103,7 @@ const Browse = () => {
         // Build query parameters for filtering
         const queryParams = new URLSearchParams();
         
-        if (selectedCategory !== 'All') {
+        if (selectedCategory && selectedCategory !== 'All') {
           queryParams.append('category', selectedCategory);
         }
         
@@ -108,6 +119,12 @@ const Browse = () => {
         }
         
         const data = await response.json() as ServerItem[];
+        console.log('Fetched data with filters:', { 
+          selectedCategory, 
+          searchTerm, 
+          queryParams: queryParams.toString(),
+          itemsCount: data.length 
+        });
         
         // Process the data
         const processedData: ProcessedItem[] = data.map(item => ({
@@ -166,6 +183,8 @@ const Browse = () => {
   useEffect(() => {
     if (category) {
       setSelectedCategory(category);
+    } else {
+      setSelectedCategory('All');
     }
   }, [category]);
 
@@ -182,8 +201,80 @@ const Browse = () => {
 
   // Handle category change
   const handleCategoryChange = (newCategory: string) => {
+    console.log('Changing category to:', newCategory);
     setSelectedCategory(newCategory);
-    navigate(newCategory === 'All' ? '/browse' : `/browse/${newCategory}`);
+    
+    // Update URL
+    if (newCategory === 'All') {
+      navigate('/browse');
+    } else {
+      navigate(`/browse/${newCategory}`);
+    }
+  };
+
+  // Open delete confirmation dialog
+  const openDeleteConfirmation = (e: React.MouseEvent, listingId: string) => {
+    e.stopPropagation(); // Prevent opening the product detail
+    setItemToDelete(listingId);
+    setShowConfirmDialog(true);
+    setDeleteError('');
+    setDeleteSuccess(false);
+  };
+
+  // Close delete confirmation dialog
+  const closeDeleteConfirmation = () => {
+    setShowConfirmDialog(false);
+    setItemToDelete(null);
+    setDeleteError('');
+    
+    // If deletion was successful, reset the success state after dialog closes
+    if (deleteSuccess) {
+      setTimeout(() => setDeleteSuccess(false), 300);
+    }
+  };
+
+  // Delete listing
+  const confirmDeleteListing = async () => {
+    if (!itemToDelete) return;
+    
+    setIsDeleting(true);
+    setDeletingItemId(itemToDelete);
+    
+    try {
+      if (!user || !user.token) {
+        throw new Error('You must be logged in to delete a listing');
+      }
+      
+      const response = await fetch(`http://localhost:5000/api/items/${itemToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Server error' }));
+        throw new Error(errorData.message || 'Failed to delete listing');
+      }
+      
+      // Remove the deleted item from the state
+      setProducts(prevProducts => prevProducts.filter(product => product.id !== itemToDelete));
+      setDeleteSuccess(true);
+      
+      // Close the dialog after a short delay to show success state
+      setTimeout(() => {
+        setShowConfirmDialog(false);
+        setItemToDelete(null);
+      }, 1000);
+      
+    } catch (err) {
+      console.error('Error deleting listing:', err);
+      setDeleteError(err.message || 'Something went wrong while deleting the listing');
+    } finally {
+      setIsDeleting(false);
+      setDeletingItemId(null);
+    }
   };
 
   // Open product detail modal
@@ -379,9 +470,24 @@ const Browse = () => {
                 {filteredProducts.map((product) => (
                   <div 
                     key={product.id} 
-                    className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                    className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer relative"
                     onClick={() => openProductDetail(product)}
                   >
+                    {/* Add delete button for user's own listings */}
+                    {user && user.id && product.seller.id && (user.id === product.seller.id) && (
+                      <button
+                        className="absolute top-2 right-2 z-10 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 transition-colors"
+                        onClick={(e) => openDeleteConfirmation(e, product.id)}
+                        disabled={isDeleting && deletingItemId === product.id}
+                      >
+                        {isDeleting && deletingItemId === product.id ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Trash2 size={18} />
+                        )}
+                      </button>
+                    )}
+                    
                     <div className="h-48 overflow-hidden relative">
                       <img 
                         src={product.images && product.images.length > 0 ? product.images[0] : ''}
@@ -567,6 +673,24 @@ const Browse = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog for Delete */}
+      <ConfirmationDialog
+        isOpen={showConfirmDialog}
+        title={deleteSuccess ? "Success!" : "Delete Listing"}
+        message={
+          deleteSuccess 
+            ? "Your listing has been successfully deleted." 
+            : deleteError 
+              ? `Error: ${deleteError}` 
+              : "Are you sure you want to delete this listing? This action cannot be undone."
+        }
+        confirmText={deleteSuccess ? "OK" : "Delete"}
+        cancelText="Cancel"
+        onConfirm={deleteSuccess ? closeDeleteConfirmation : confirmDeleteListing}
+        onCancel={closeDeleteConfirmation}
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
