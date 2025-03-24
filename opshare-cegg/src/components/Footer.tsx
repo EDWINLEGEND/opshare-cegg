@@ -9,9 +9,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-6">
-              <div className="w-10 h-10 bg-green rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-lg">O</span>
-              </div>
+              <img 
+                src="/logo.svg" 
+                alt="OpShare Logo" 
+                className="w-10 h-10"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
               <span className="font-bold text-2xl text-green">OpShare</span>
             </Link>
             
@@ -97,7 +102,7 @@ const Footer = () => {
         <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
           <div className="footer-brand">
             <h3 className="text-xl font-bold text-green">OpShare</h3>
-            <p>© {new Date().getFullYear()} OpShare. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} OpShare. All rights reserved.</p>
           </div>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/terms" className="hover:text-green transition-colors">Terms of Service</Link>

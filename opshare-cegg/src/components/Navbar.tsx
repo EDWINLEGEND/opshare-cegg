@@ -24,7 +24,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <img 
-                src="/images/logo.svg" 
+                src="/logo.svg" 
                 alt="OpShare Logo" 
                 className="h-8 w-auto mr-2"
                 onError={(e) => {
