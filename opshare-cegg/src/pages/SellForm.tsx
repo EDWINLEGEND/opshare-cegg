@@ -1,11 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Plus, Upload, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../contexts/UserContext';
 
 const SellForm = () => {
   const navigate = useNavigate();
   const [uploadedImages, setUploadedImages] = useState([]);
   const [listingType, setListingType] = useState('rent'); // 'rent' or 'sell'
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const { user } = useUser();
+  
+  // Form refs
+  const titleRef = useRef(null);
+  const categoryRef = useRef(null);
+  const conditionRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const rentalPriceRef = useRef(null);
+  const rentalPeriodRef = useRef(null);
+  const securityDepositRef = useRef(null);
+  const salePriceRef = useRef(null);
   
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -23,11 +37,67 @@ const SellForm = () => {
     setUploadedImages(uploadedImages.filter(image => image.id !== id));
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real app, you'd submit the form data to your API
-    // Then redirect to the dashboard
-    navigate('/dashboard');
+    setError('');
+    setIsSubmitting(true);
+    
+    // Check if user is authenticated
+    if (!user || !user.token) {
+      setError('You must be logged in to create a listing');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    try {
+      // Create form data object
+      const formData = new FormData();
+      
+      // Add text fields
+      formData.append('title', titleRef.current.value);
+      formData.append('category', categoryRef.current.value);
+      formData.append('condition', conditionRef.current.value);
+      formData.append('description', descriptionRef.current.value);
+      formData.append('listingType', listingType);
+      
+      if (listingType === 'rent') {
+        formData.append('price', rentalPriceRef.current.value);
+        formData.append('rentalPeriod', rentalPeriodRef.current.value);
+        if (securityDepositRef.current.value) {
+          formData.append('securityDeposit', securityDepositRef.current.value);
+        }
+      } else {
+        formData.append('salePrice', salePriceRef.current.value);
+      }
+      
+      // Add image files
+      uploadedImages.forEach(image => {
+        formData.append('images', image.file);
+      });
+      
+      // Send data to server
+      const response = await fetch('http://localhost:5000/api/items', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${user.token}`
+        },
+        body: formData
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create listing');
+      }
+      
+      // Redirect to browse page
+      navigate('/browse');
+    } catch (err) {
+      setError(err.message || 'Something went wrong. Please try again.');
+      console.error('Error creating listing:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -42,6 +112,16 @@ const SellForm = () => {
           </div>
           
           <h1 className="text-3xl font-bold text-gray-900 mb-8">List Your Item</h1>
+          
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+              <div className="flex">
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
           
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Listing type selection */}
@@ -129,6 +209,7 @@ const SellForm = () => {
                   <input
                     type="text"
                     id="title"
+                    ref={titleRef}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
                     placeholder="Enter a descriptive title (e.g. 'Bosch Electric Drill')"
                     required
@@ -142,6 +223,7 @@ const SellForm = () => {
                     </label>
                     <select
                       id="category"
+                      ref={categoryRef}
                       className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
                       required
                     >
@@ -162,6 +244,7 @@ const SellForm = () => {
                     </label>
                     <select
                       id="condition"
+                      ref={conditionRef}
                       className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
                       required
                     >
@@ -181,6 +264,7 @@ const SellForm = () => {
                   </label>
                   <textarea
                     id="description"
+                    ref={descriptionRef}
                     rows={4}
                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
                     placeholder="Describe your item in detail. Include brand, model, features, etc."
@@ -208,6 +292,7 @@ const SellForm = () => {
                         <input
                           type="number"
                           id="rentalPrice"
+                          ref={rentalPriceRef}
                           min="0"
                           step="0.01"
                           className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
@@ -223,6 +308,7 @@ const SellForm = () => {
                       </label>
                       <select
                         id="rentalPeriod"
+                        ref={rentalPeriodRef}
                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
                         required
                       >
@@ -245,6 +331,7 @@ const SellForm = () => {
                       <input
                         type="number"
                         id="securityDeposit"
+                        ref={securityDepositRef}
                         min="0"
                         step="0.01"
                         className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
@@ -268,6 +355,7 @@ const SellForm = () => {
                     <input
                       type="number"
                       id="salePrice"
+                      ref={salePriceRef}
                       min="0"
                       step="0.01"
                       className="w-full pl-8 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green focus:border-green"
@@ -283,9 +371,10 @@ const SellForm = () => {
             <div className="flex justify-end">
               <button 
                 type="submit"
-                className="btn-primary text-lg py-3 px-8"
+                disabled={isSubmitting}
+                className={`btn-primary text-lg py-3 px-8 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
-                Publish Listing
+                {isSubmitting ? 'Creating Listing...' : 'Publish Listing'}
               </button>
             </div>
           </form>

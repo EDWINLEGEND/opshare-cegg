@@ -6,10 +6,49 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure storage for multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    cb(null, `${uuidv4()}${ext}`);
+  }
+});
+
+// File filter
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only images are allowed'), false);
+  }
+};
+
+// Initialize upload middleware
+const upload = multer({ 
+  storage, 
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+});
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
@@ -47,9 +86,17 @@ const ItemSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   category: { type: String, required: true },
+  condition: { type: String, required: true },
   price: { type: Number, required: true },
+  rentalPeriod: { type: String, enum: ['hour', 'day', 'week', 'month'], default: 'day' },
+  securityDeposit: { type: Number },
+  listingType: { type: String, enum: ['rent', 'sell'], default: 'rent' },
   status: { type: String, enum: ['available', 'borrowed', 'unavailable'], default: 'available' },
-  image: { type: String },
+  images: [{ type: String }],
+  location: { type: String, default: 'Local Area' },
+  distance: { type: Number, default: 0 },
+  rating: { type: Number, default: 5 },
+  reviews: { type: Number, default: 0 },
 }, { timestamps: true });
 
 const Item = mongoose.model('Item', ItemSchema);
@@ -156,18 +203,38 @@ app.patch('/api/users/:id', auth, async (req, res) => {
 
 // ITEM ENDPOINTS
 
-// Create a new item
-app.post('/api/items', auth, async (req, res) => {
+// Create a new item with image upload
+app.post('/api/items', auth, upload.array('images', 5), async (req, res) => {
   try {
-    const { title, description, category, price, image } = req.body;
+    const { 
+      title, 
+      description, 
+      category, 
+      condition,
+      price, 
+      listingType,
+      rentalPeriod,
+      securityDeposit,
+      salePrice
+    } = req.body;
+    
+    // Process uploaded images
+    const imageUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+    
+    // Set the correct price based on listing type
+    const finalPrice = listingType === 'sell' ? salePrice : price;
     
     const newItem = new Item({
       ownerId: req.userId,
       title,
       description,
       category,
-      price,
-      image
+      condition,
+      price: finalPrice,
+      listingType,
+      rentalPeriod: listingType === 'rent' ? rentalPeriod : undefined,
+      securityDeposit: listingType === 'rent' ? securityDeposit : undefined,
+      images: imageUrls,
     });
     
     await newItem.save();
@@ -218,7 +285,7 @@ app.get('/api/items/:id', async (req, res) => {
 // Update an item
 app.patch('/api/items/:id', auth, async (req, res) => {
   try {
-    const { title, description, category, price, status, image } = req.body;
+    const { title, description, category, condition, price, listingType, rentalPeriod, securityDeposit, salePrice } = req.body;
     
     // Find the item first to check ownership
     const item = await Item.findById(req.params.id);
@@ -229,7 +296,7 @@ app.patch('/api/items/:id', auth, async (req, res) => {
       return res.status(403).json({ message: "Not authorized to update this item" });
     }
     
-    const updates = { title, description, category, price, status, image };
+    const updates = { title, description, category, condition, price, listingType, rentalPeriod, securityDeposit, salePrice };
     
     // Remove undefined fields
     Object.keys(updates).forEach(key => updates[key] === undefined && delete updates[key]);
