@@ -17,31 +17,32 @@ const SignIn = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, you would validate credentials with your backend
-      // For demo purposes, we'll simulate a successful login
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock user data - in a real app, this would come from your backend
-      const userData = {
-        id: '123456',
-        name: email.split('@')[0], // Extract name from email for demo
-        email: email,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(email.split('@')[0])}&background=0D8ABC&color=fff`
-      };
-      
-      // Call the login function from context
-      login(userData);
-      
-      // Redirect based on admin status
-      if (userData.isAdmin) {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/dashboard');
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
       }
-    } catch (err) {
-      setError('Invalid email or password. Please try again.');
+      
+      // Call the login function from context with the real user data
+      login({
+        id: data.user.id,
+        name: `${data.user.firstName} ${data.user.lastName}`,
+        email: data.user.email,
+        token: data.token,
+        isAdmin: email.endsWith('@opshare.com'), // Set admin status based on email domain
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.firstName + ' ' + data.user.lastName)}&background=0D8ABC&color=fff`
+      });
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }

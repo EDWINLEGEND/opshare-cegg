@@ -7,6 +7,7 @@ interface User {
   email: string;
   avatar?: string;
   isAdmin: boolean;
+  token?: string;
 }
 
 interface UserContextType {
@@ -73,4 +74,4 @@ export const useUser = (): UserContextType => {
     throw new Error('useUser must be used within a UserProvider');
   }
   return context;
-}; 
+};
