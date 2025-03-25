@@ -1,7 +1,8 @@
 import React from 'react';
-import { ArrowUpRight, TreePine, DollarSign, Users, Leaf } from 'lucide-react';
+import { ArrowUpRight, TreePine, DollarSign, Users, Leaf, ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 const stats = [
   {
@@ -11,9 +12,11 @@ const stats = [
     unit: 'tons',
     description: 'of materials kept out of landfills',
     icon: <TreePine className="w-6 h-6" />,
-    color: 'green',
-    bgGradient: 'from-green-500/20 to-green-600/20',
-    iconColor: 'text-green-400',
+    bgGradient: 'from-emerald-500 to-green-600',
+    iconBg: 'bg-emerald-600',
+    textColor: 'text-white',
+    descColor: 'text-emerald-50/90',
+    animation: 'animate-pulse'
   },
   {
     id: 2,
@@ -22,9 +25,11 @@ const stats = [
     unit: 'million',
     description: 'dollars saved by our community',
     icon: <DollarSign className="w-6 h-6" />,
-    color: 'yellow',
-    bgGradient: 'from-amber-500/20 to-amber-600/20',
-    iconColor: 'text-amber-400',
+    bgGradient: 'from-amber-500 to-yellow-600',
+    iconBg: 'bg-amber-600',
+    textColor: 'text-white',
+    descColor: 'text-amber-50/90',
+    animation: 'animate-bounce'
   },
   {
     id: 3,
@@ -33,9 +38,11 @@ const stats = [
     unit: '+',
     description: 'active users sharing resources',
     icon: <Users className="w-6 h-6" />,
-    color: 'teal',
-    bgGradient: 'from-teal-500/20 to-teal-600/20',
-    iconColor: 'text-teal-400',
+    bgGradient: 'from-blue-500 to-indigo-600',
+    iconBg: 'bg-blue-600',
+    textColor: 'text-white',
+    descColor: 'text-blue-50/90',
+    animation: 'animate-pulse'
   },
   {
     id: 4,
@@ -44,61 +51,86 @@ const stats = [
     unit: 'tons',
     description: 'of CO₂ emissions prevented',
     icon: <Leaf className="w-6 h-6" />,
-    color: 'green',
-    bgGradient: 'from-green-500/20 to-green-600/20',
-    iconColor: 'text-green-400',
+    bgGradient: 'from-purple-500 to-pink-600',
+    iconBg: 'bg-purple-600',
+    textColor: 'text-white',
+    descColor: 'text-purple-50/90',
+    animation: 'animate-bounce'
   },
 ];
 
 const ImpactStats = () => {
   return (
-    <section className="bg-gradient-to-br from-green-900 via-green-800 to-teal-800 text-white py-20 px-4 md:px-8 lg:px-16 relative overflow-hidden">
-      <div className="absolute inset-0">
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-yellow-400 mix-blend-overlay filter blur-3xl opacity-20"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-green-400 mix-blend-overlay filter blur-3xl opacity-20"></div>
-        <div className="absolute top-1/2 left-1/4 w-64 h-64 rounded-full bg-teal-400 mix-blend-overlay filter blur-3xl opacity-10"></div>
+    <section className="relative py-20 px-4 md:px-8 overflow-hidden bg-gradient-to-r from-green-50 via-green-100 to-emerald-50">
+      {/* Abstract Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-emerald-400/20 mix-blend-multiply filter blur-[100px]"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-green-300/30 mix-blend-multiply filter blur-[100px]"></div>
+        <div className="absolute top-1/3 left-1/4 w-80 h-80 rounded-full bg-teal-400/20 mix-blend-multiply filter blur-[80px]"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-64 h-64 rounded-full bg-lime-300/20 mix-blend-multiply filter blur-[80px]"></div>
       </div>
-    
+      
       <div className="container mx-auto relative z-10">
-        <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in">
-          <span className="inline-block px-4 py-1.5 mb-4 text-sm font-semibold text-white/90 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-            Sustainability Metrics
-          </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Our Collective Impact</h2>
-          <p className="text-white/80 text-lg">
-            Every item shared or reused contributes to a more sustainable future. See how our community is making a difference.
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <Badge 
+            variant="outline" 
+            className="mb-4 px-4 py-1.5 rounded-full bg-emerald-600/90 backdrop-blur text-white border-emerald-400 text-sm font-medium"
+          >
+            Community Impact Metrics
+          </Badge>
+          
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-700 via-green-600 to-teal-600 bg-clip-text text-transparent">
+            Our Collective Impact
+          </h2>
+          
+          <p className="text-emerald-800 text-lg leading-relaxed mx-auto max-w-2xl">
+            Every item shared or reused contributes to a more sustainable future. See how our community is making a difference together.
           </p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
+        {/* Stats Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          {stats.map((stat) => (
             <Card 
               key={stat.id} 
-              className={`bg-gradient-to-br ${stat.bgGradient} backdrop-blur-sm border-0 shadow-xl animate-scale-in hover:scale-105 transition-transform duration-300`}
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className={`bg-gradient-to-br ${stat.bgGradient} border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden`}
             >
-              <CardContent className="p-6">
-                <div className={`inline-flex items-center justify-center p-3 rounded-xl bg-white/10 backdrop-blur-sm mb-5 ${stat.iconColor}`}>
+              <CardHeader className="pb-2">
+                <div className={`inline-flex items-center justify-center p-3 rounded-xl ${stat.iconBg} ${stat.textColor} shadow-lg`}>
                   {stat.icon}
-                  <ArrowUpRight className="w-4 h-4 ml-1" />
                 </div>
-                <h3 className="text-lg font-semibold mb-1 text-white">{stat.title}</h3>
+                <CardTitle className={`mt-3 text-xl font-bold ${stat.textColor}`}>
+                  {stat.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pb-3">
                 <div className="flex items-baseline">
-                  <span className="text-4xl font-bold text-white">{stat.value}</span>
-                  <span className="text-xl ml-1 text-white/90">{stat.unit}</span>
+                  <span className={`text-4xl font-extrabold ${stat.textColor}`}>{stat.value}</span>
+                  <span className={`text-xl ml-1 ${stat.textColor} opacity-90`}>{stat.unit}</span>
                 </div>
-                <p className="text-white/70 mt-2 text-sm">{stat.description}</p>
+                <CardDescription className={`${stat.descColor} mt-2`}>
+                  {stat.description}
+                </CardDescription>
               </CardContent>
+              <CardFooter className={`pt-0 ${stat.descColor}`}>
+                <div className={`text-xs uppercase font-semibold tracking-wide flex items-center ${stat.animation} animate-iteration-count-1 animate-duration-2000`}>
+                  <span>View details</span>
+                  <ArrowRight className="ml-1 h-3 w-3" />
+                </div>
+              </CardFooter>
             </Card>
           ))}
         </div>
         
+        {/* Action Button */}
         <div className="text-center mt-16">
           <Button 
-            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-green-900 font-medium py-2.5 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all"
+            className="bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white font-medium rounded-full py-6 px-8 shadow-lg shadow-green-700/20 hover:shadow-green-700/30 transition-all"
+            size="lg"
           >
-            View Full Impact Report
-            <ArrowUpRight className="ml-2 h-4 w-4" />
+            <span className="mr-2">View Full Impact Report</span>
+            <ArrowUpRight className="h-5 w-5" />
           </Button>
         </div>
       </div>
