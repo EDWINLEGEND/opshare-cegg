@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Filter, ChevronDown, Star, MapPin, Clock, DollarSign, X, Trash2, AlertCircle } from 'lucide-react';
+import { Search, Filter, ChevronDown, Star, MapPin, Clock, DollarSign, X, Trash2, AlertCircle, 
+  Heart, Share2, MessageCircle, Eye, Calendar, Award, ShoppingCart, Truck, Shield, RotateCcw } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import ConfirmationDialog from '@/components/common/ConfirmationDialog';
 import { getApiUrl, checkApiConnection } from '@/config/api';
+import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 
 // Keep mock data as fallback during development
 const mockProducts = [
@@ -146,7 +154,54 @@ interface ProcessedItem {
   condition: string;
   features: string[];
   listingType: string;
+  // Additional mock data for the detail view
+  viewCount?: number;
+  datePosted?: string;
+  reviewList?: {
+    id: string;
+    user: {
+      name: string;
+      image: string;
+    };
+    rating: number;
+    date: string;
+    comment: string;
+  }[];
 }
+
+// Mock reviews data to enhance the product detail
+const mockReviews = [
+  {
+    id: 'r1',
+    user: {
+      name: 'Alex M.',
+      image: 'https://randomuser.me/api/portraits/men/22.jpg'
+    },
+    rating: 5,
+    date: '2 weeks ago',
+    comment: 'This was exactly what I needed for my weekend project. Great condition and the owner was very helpful with pickup arrangements.'
+  },
+  {
+    id: 'r2',
+    user: {
+      name: 'Sarah L.',
+      image: 'https://randomuser.me/api/portraits/women/32.jpg'
+    },
+    rating: 4,
+    date: '1 month ago',
+    comment: 'Good quality item, would rent again. Only giving 4 stars because the battery life was a bit shorter than expected.'
+  },
+  {
+    id: 'r3',
+    user: {
+      name: 'Marcus J.',
+      image: 'https://randomuser.me/api/portraits/men/54.jpg'
+    },
+    rating: 5,
+    date: '2 months ago',
+    comment: 'Perfect! Saved me so much money by borrowing instead of buying. The owner provided a quick tutorial on how to use it properly.'
+  }
+];
 
 const Browse = () => {
   const { category } = useParams();
@@ -365,7 +420,7 @@ const Browse = () => {
 
   // Function to open product detail
   const openProductDetail = (product: ProcessedItem) => {
-    setSelectedProduct(product);
+    setSelectedProduct(enhanceProductData(product));
   };
 
   // Function to close product detail
@@ -408,6 +463,345 @@ const Browse = () => {
         onConfirm={confirmDeleteListing}
         onCancel={closeDeleteConfirmation}
       />
+    );
+  };
+
+  // Enhance product data with additional detail info
+  const enhanceProductData = (product: ProcessedItem): ProcessedItem => {
+    return {
+      ...product,
+      viewCount: Math.floor(Math.random() * 200) + 50, // Random view count
+      datePosted: '2 weeks ago',
+      reviewList: mockReviews,
+    };
+  };
+  
+  // Render star rating component
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center">
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            className={`h-4 w-4 ${i < Math.floor(rating) ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`}
+          />
+        ))}
+      </div>
+    );
+  };
+  
+  // Render product detail modal
+  const renderProductDetail = () => {
+    if (!selectedProduct) return null;
+    
+    return (
+      <Dialog open={!!selectedProduct} onOpenChange={(open) => !open && closeProductDetail()}>
+        <DialogContent className="sm:max-w-[95%] md:max-w-[85%] lg:max-w-6xl max-h-[90vh] overflow-y-auto p-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+            {/* Product Images Section */}
+            <div className="bg-gray-100 p-4 lg:p-8 relative">
+              <DialogClose className="absolute top-4 right-4 z-10 rounded-full bg-white/80 backdrop-blur p-2 hover:bg-white">
+                <X className="h-4 w-4" />
+              </DialogClose>
+              
+              <div className="relative h-80 sm:h-96 md:h-[500px] rounded-lg overflow-hidden">
+                <img
+                  src={selectedProduct.images[0]}
+                  alt={selectedProduct.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-4 right-4 flex space-x-2">
+                  <button className="bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white">
+                    <Heart className="h-5 w-5 text-gray-700" />
+                  </button>
+                  <button className="bg-white/80 backdrop-blur p-2 rounded-full hover:bg-white">
+                    <Share2 className="h-5 w-5 text-gray-700" />
+                  </button>
+                </div>
+                
+                <div className="absolute top-4 left-4">
+                  <Badge className={`${selectedProduct.listingType === 'rent' ? 'bg-blue-500' : 'bg-emerald-500'} hover:${selectedProduct.listingType === 'rent' ? 'bg-blue-600' : 'bg-emerald-600'}`}>
+                    {selectedProduct.listingType === 'rent' ? 'For Rent' : 'For Sale'}
+                  </Badge>
+                </div>
+              </div>
+              
+              {/* Thumbnails - would be shown if product had multiple images */}
+              {selectedProduct.images.length > 1 && (
+                <div className="flex space-x-2 mt-4 overflow-x-auto pb-2">
+                  {selectedProduct.images.map((img, index) => (
+                    <div key={index} className="h-20 w-20 flex-shrink-0 rounded-md overflow-hidden border-2 border-white">
+                      <img src={img} alt={`Thumbnail ${index}`} className="h-full w-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Product Details Section */}
+            <div className="p-4 lg:p-8 flex flex-col h-full">
+              <div className="mb-6">
+                <div className="flex justify-between items-start">
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{selectedProduct.title}</h1>
+                  <div className="flex items-center">
+                    <Star className="h-5 w-5 text-yellow-500 fill-yellow-500 mr-1" />
+                    <span className="text-lg font-medium">{selectedProduct.rating}</span>
+                    <span className="text-gray-500 ml-1">({selectedProduct.reviews} reviews)</span>
+                  </div>
+                </div>
+                
+                <div className="flex items-center mt-2 space-x-4">
+                  <div className="flex items-center text-gray-500">
+                    <Eye className="h-4 w-4 mr-1" />
+                    <span>{selectedProduct.viewCount} views</span>
+                  </div>
+                  <div className="flex items-center text-gray-500">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    <span>Posted {selectedProduct.datePosted}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center mb-6">
+                <div className="flex-shrink-0 mr-3">
+                  <Avatar className="h-12 w-12 border-2 border-white">
+                    <AvatarImage src={selectedProduct.seller.image} alt={selectedProduct.seller.name} />
+                    <AvatarFallback>{selectedProduct.seller.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                </div>
+                <div>
+                  <div className="flex items-center">
+                    <span className="font-medium text-gray-900">{selectedProduct.seller.name}</span>
+                    {selectedProduct.seller.verified && (
+                      <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200">
+                        <Award className="h-3 w-3 mr-1" />
+                        Verified
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center mt-1">
+                    {renderStars(selectedProduct.seller.rating)}
+                    <span className="ml-1 text-sm text-gray-500">{selectedProduct.seller.rating.toFixed(1)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <Separator className="my-6" />
+              
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="flex flex-col">
+                  <span className="text-gray-500 text-sm">Price</span>
+                  <div className="flex items-baseline">
+                    <span className="text-2xl font-bold text-gray-900">${selectedProduct.price}</span>
+                    {selectedProduct.listingType === 'rent' && (
+                      <span className="text-gray-600 ml-1">/{selectedProduct.rentalPeriod}</span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex flex-col">
+                  <span className="text-gray-500 text-sm">Location</span>
+                  <div className="flex items-center">
+                    <MapPin className="h-4 w-4 text-gray-600 mr-1" />
+                    <span className="text-gray-900">{selectedProduct.location}</span>
+                    <span className="text-gray-600 ml-1">({selectedProduct.distance} miles)</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col">
+                  <span className="text-gray-500 text-sm">Condition</span>
+                  <span className="text-gray-900">{selectedProduct.condition}</span>
+                </div>
+                
+                <div className="flex flex-col">
+                  <span className="text-gray-500 text-sm">Category</span>
+                  <span className="text-gray-900">{selectedProduct.category}</span>
+                </div>
+              </div>
+              
+              {selectedProduct.features && selectedProduct.features.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium mb-2">Features</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProduct.features.map((feature, index) => (
+                      <Badge key={index} variant="secondary" className="px-3 py-1">
+                        {feature}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <div className="mb-6">
+                <h3 className="text-lg font-medium mb-2">Description</h3>
+                <p className="text-gray-600">{selectedProduct.description}</p>
+              </div>
+              
+              <div className="mt-auto space-y-3">
+                <Button className={`w-full ${selectedProduct.listingType === 'rent' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-emerald-600 hover:bg-emerald-700'}`} size="lg">
+                  {selectedProduct.listingType === 'rent' ? (
+                    <>
+                      <ShoppingCart className="h-5 w-5 mr-2" />
+                      Rent Now
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="h-5 w-5 mr-2" />
+                      Buy Now
+                    </>
+                  )}
+                </Button>
+                
+                <Button variant="outline" className="w-full" size="lg">
+                  <MessageCircle className="h-5 w-5 mr-2" />
+                  Contact Seller
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Tabs for Reviews, Shipping, Return Policy */}
+          <div className="border-t p-4 lg:p-8">
+            <Tabs defaultValue="reviews">
+              <TabsList className="mb-6">
+                <TabsTrigger value="reviews" className="flex items-center">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Reviews ({selectedProduct.reviewList?.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="shipping" className="flex items-center">
+                  <Truck className="h-4 w-4 mr-2" />
+                  Shipping & Pickup
+                </TabsTrigger>
+                <TabsTrigger value="policy" className="flex items-center">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Return Policy
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="reviews" className="space-y-6">
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center">
+                        <h3 className="text-xl font-bold">{selectedProduct.rating.toFixed(1)}</h3>
+                        <span className="text-gray-500 ml-2">out of 5</span>
+                      </div>
+                      <div className="flex items-center mt-1">
+                        {renderStars(selectedProduct.rating)}
+                        <span className="ml-2 text-gray-500">Based on {selectedProduct.reviews} reviews</span>
+                      </div>
+                    </div>
+                    
+                    <div className="hidden md:block space-y-2 w-64">
+                      {[5, 4, 3, 2, 1].map(num => (
+                        <div key={num} className="flex items-center">
+                          <span className="text-sm text-gray-500 w-2">{num}</span>
+                          <Star className="h-4 w-4 text-gray-400 ml-1 mr-2" />
+                          <Progress 
+                            value={num === 5 ? 75 : num === 4 ? 20 : num === 3 ? 5 : 0} 
+                            className="h-2 w-full" 
+                          />
+                          <span className="text-sm text-gray-500 ml-2 w-8">
+                            {num === 5 ? '75%' : num === 4 ? '20%' : num === 3 ? '5%' : '0%'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedProduct.reviewList?.map(review => (
+                  <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
+                    <div className="flex justify-between">
+                      <div className="flex items-center">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={review.user.image} alt={review.user.name} />
+                          <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="ml-4">
+                          <div className="font-medium">{review.user.name}</div>
+                          <div className="text-sm text-gray-500">{review.date}</div>
+                        </div>
+                      </div>
+                      <div className="flex">
+                        {renderStars(review.rating)}
+                      </div>
+                    </div>
+                    <p className="mt-4 text-gray-600">{review.comment}</p>
+                  </div>
+                ))}
+                
+                <Button variant="outline" className="w-full">
+                  See all reviews
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="shipping" className="space-y-4">
+                <div className="bg-blue-50 rounded-lg p-4 flex">
+                  <Truck className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0" />
+                  <p className="text-blue-800">
+                    This item {selectedProduct.listingType === 'rent' ? 'can be picked up locally' : 'can be shipped or picked up locally'}. Coordinate with the seller for details.
+                  </p>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-2">Pickup Options</h3>
+                  <p className="text-gray-600 mb-4">Meet the seller at a safe public location. We recommend:</p>
+                  <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                    <li>Police stations or public buildings</li>
+                    <li>Shopping malls or busy retail locations</li>
+                    <li>Coffee shops or restaurants during daylight hours</li>
+                  </ul>
+                </div>
+                
+                {selectedProduct.listingType !== 'rent' && (
+                  <div className="mt-4">
+                    <h3 className="font-medium mb-2">Shipping Options</h3>
+                    <p className="text-gray-600 mb-4">If shipping is available, the following options might apply:</p>
+                    <div className="space-y-3">
+                      <div className="flex justify-between p-3 border rounded-lg">
+                        <span>Standard Shipping</span>
+                        <span>3-5 business days</span>
+                      </div>
+                      <div className="flex justify-between p-3 border rounded-lg">
+                        <span>Express Shipping</span>
+                        <span>1-2 business days</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="policy" className="space-y-4">
+                <div className="bg-orange-50 rounded-lg p-4 flex">
+                  <RotateCcw className="h-5 w-5 text-orange-600 mr-3 flex-shrink-0" />
+                  <p className="text-orange-800">
+                    Return policies are set by individual sellers and may vary. Always confirm the policy before completing your transaction.
+                  </p>
+                </div>
+                
+                <div>
+                  <h3 className="font-medium mb-2">Common Policies</h3>
+                  <ul className="list-disc pl-5 space-y-2 text-gray-600">
+                    <li><span className="font-medium">For rentals:</span> Inspect the item at pickup. Report any issues immediately.</li>
+                    <li><span className="font-medium">For purchases:</span> Typically 7-14 days return window if item is not as described.</li>
+                    <li><span className="font-medium">Condition:</span> Items should be returned in the same condition as received.</li>
+                  </ul>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg mt-4">
+                  <h3 className="font-medium mb-2">This Seller's Policy</h3>
+                  <p className="text-gray-600">
+                    {selectedProduct.listingType === 'rent' 
+                      ? "Rental items must be returned in the same condition. Security deposit may be required."
+                      : "This seller accepts returns within 7 days if the item is not as described."}
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </DialogContent>
+      </Dialog>
     );
   };
 
@@ -580,7 +974,8 @@ const Browse = () => {
         )}
         
         {renderDeleteConfirmationDialog()}
-        </div>
+        {renderProductDetail()}
+      </div>
     </div>
   );
 };
