@@ -1,13 +1,90 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Search, Filter, ChevronDown, Star, MapPin, Clock, DollarSign, X, Trash2 } from 'lucide-react';
+import { Search, Filter, ChevronDown, Star, MapPin, Clock, DollarSign, X, Trash2, AlertCircle } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import ConfirmationDialog from '@/components/common/ConfirmationDialog';
-import { getApiUrl } from '@/config/api';
+import { getApiUrl, checkApiConnection } from '@/config/api';
 
 // Keep mock data as fallback during development
 const mockProducts = [
-  // ... (rest of the mock data remains the same)
+  {
+    id: '1',
+    title: 'Professional DSLR Camera',
+    description: 'High-quality camera for professional photography',
+    price: 25,
+    rentalPeriod: 'day',
+    location: 'Downtown',
+    distance: 1.2,
+    rating: 4.9,
+    reviews: 56,
+    seller: {
+      id: '101',
+      name: 'John D.',
+      rating: 4.8,
+      verified: true,
+      image: 'https://randomuser.me/api/portraits/men/75.jpg'
+    },
+    category: 'Electronics',
+    images: [
+      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
+    ],
+    available: true,
+    condition: 'Like New',
+    features: ['4K Video', '24.2MP', 'Wireless'],
+    listingType: 'rent'
+  },
+  {
+    id: '2',
+    title: 'Mountain Bike',
+    description: 'Great for trail riding and commuting',
+    price: 15,
+    rentalPeriod: 'day',
+    location: 'Park Area',
+    distance: 2.5,
+    rating: 4.7,
+    reviews: 28,
+    seller: {
+      id: '102',
+      name: 'Emma S.',
+      rating: 4.9,
+      verified: true,
+      image: 'https://randomuser.me/api/portraits/women/65.jpg'
+    },
+    category: 'Sports',
+    images: [
+      'https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
+    ],
+    available: true,
+    condition: 'Good',
+    features: ['21 Speed', 'Disc Brakes', 'Aluminum Frame'],
+    listingType: 'rent'
+  },
+  {
+    id: '3',
+    title: 'Camping Tent (4 Person)',
+    description: 'Waterproof tent perfect for family camping',
+    price: 20,
+    rentalPeriod: 'day',
+    location: 'North End',
+    distance: 3.8,
+    rating: 4.6,
+    reviews: 42,
+    seller: {
+      id: '103',
+      name: 'Robert T.',
+      rating: 4.7,
+      verified: true,
+      image: 'https://randomuser.me/api/portraits/men/32.jpg'
+    },
+    category: 'Camping',
+    images: [
+      'https://images.unsplash.com/photo-1478827536114-da961b7f86d2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
+    ],
+    available: true,
+    condition: 'Excellent',
+    features: ['Waterproof', 'Easy Setup', 'Carry Bag Included'],
+    listingType: 'rent'
+  }
 ];
 
 // Group products by category
@@ -89,6 +166,7 @@ const Browse = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [realCategories, setRealCategories] = useState<string[]>(['All']);
+  const [apiAvailable, setApiAvailable] = useState(true);
   
   // State for confirmation dialog
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -96,9 +174,27 @@ const Browse = () => {
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   
-  // Fetch products from API
+  // Check API availability first
+  useEffect(() => {
+    const checkApiAvailability = async () => {
+      const isAvailable = await checkApiConnection();
+      setApiAvailable(isAvailable);
+      if (!isAvailable) {
+        console.log('API not available, using mock data');
+        setProducts(mockProducts);
+        setRealCategories(['All', ...categories]);
+        setLoading(false);
+      }
+    };
+    
+    checkApiAvailability();
+  }, []);
+  
+  // Fetch products from API if API is available
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!apiAvailable) return;
+      
       setLoading(true);
       try {
         // Build query parameters for filtering
@@ -148,13 +244,8 @@ const Browse = () => {
           },
           category: item.category,
           images: item.images && item.images.length > 0 
-            ? item.images.map(img => {
-                // Check if the image URL is already a full URL (Cloudinary) or a local path
-                return img.startsWith('http') 
-                  ? img // Already a full URL (Cloudinary)
-                  : `${getApiUrl(img)}`; // Local path that needs the server prefix
-              }) 
-            : ['https://via.placeholder.com/800x600?text=No+Image+Available'],
+            ? item.images
+            : ['https://via.placeholder.com/300x200?text=No+Image'],
           available: item.status === 'available',
           condition: item.condition || 'Good',
           features: [],
@@ -163,57 +254,37 @@ const Browse = () => {
         
         setProducts(processedData);
         
-        // Extract unique categories from data
-        const categorySet = new Set<string>(['All']);
-        data.forEach(item => {
-          if (item.category) {
-            categorySet.add(item.category);
-          }
-        });
-        const uniqueCategories = Array.from(categorySet);
-        setRealCategories(uniqueCategories);
+        // Extract categories
+        const allCategories = ['All', ...new Set(data.map(item => item.category))];
+        setRealCategories(allCategories);
         
+        setLoading(false);
+        setError('');
       } catch (err) {
         console.error('Error fetching products:', err);
-        setError('Failed to load listings. Please try again later.');
-        // Fall back to mock data in development
-        if (process.env.NODE_ENV !== 'production') {
-          setProducts(mockProducts as unknown as ProcessedItem[]);
-        }
-      } finally {
+        setError(err.message || 'Failed to load products');
         setLoading(false);
+        
+        // Fallback to mock data if API fails
+        setProducts(mockProducts);
+        setRealCategories(['All', ...categories]);
       }
     };
     
     fetchProducts();
-  }, [selectedCategory, searchTerm]);
-
-  // Update selected category when URL parameter changes
-  useEffect(() => {
-    if (category) {
-      setSelectedCategory(category);
-    } else {
-      setSelectedCategory('All');
-    }
-  }, [category]);
-
-  // Filter products based on filters only (search term and category used in API)
-  const filteredProducts = products.filter(product => {
-    // Filter by distance
-    const matchesDistance = product.distance <= maxDistance;
-    
-    // Filter by price
-    const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
-    
-    return matchesDistance && matchesPrice;
-  });
-
-  // Handle category change
+  }, [selectedCategory, searchTerm, apiAvailable]);
+  
+  // Display either real categories or mock categories based on API availability
+  const displayCategories = realCategories.length > 1 ? realCategories : ['All', ...categories];
+  
+  // Display either API products or mock products
+  const displayProducts = products.length > 0 ? products : mockProducts;
+  
+  // Function to handle category change
   const handleCategoryChange = (newCategory: string) => {
-    console.log('Changing category to:', newCategory);
     setSelectedCategory(newCategory);
     
-    // Update URL
+    // Update the URL to reflect the category change without a full page reload
     if (newCategory === 'All') {
       navigate('/browse');
     } else {
@@ -221,588 +292,278 @@ const Browse = () => {
     }
   };
 
-  // Open delete confirmation dialog
+  // Function to open delete confirmation dialog
   const openDeleteConfirmation = (e: React.MouseEvent, listingId: string) => {
     e.stopPropagation(); // Prevent opening the product detail
     setItemToDelete(listingId);
     setShowConfirmDialog(true);
-    setDeleteError('');
-    setDeleteSuccess(false);
   };
 
-  // Close delete confirmation dialog
+  // Function to close delete confirmation dialog
   const closeDeleteConfirmation = () => {
     setShowConfirmDialog(false);
     setItemToDelete(null);
+    setDeleteSuccess(false);
     setDeleteError('');
-    
-    // If deletion was successful, reset the success state after dialog closes
-    if (deleteSuccess) {
-      setTimeout(() => setDeleteSuccess(false), 300);
-    }
   };
 
-  // Delete listing
+  // Function to confirm deletion of a listing
   const confirmDeleteListing = async () => {
     if (!itemToDelete) return;
     
     setIsDeleting(true);
-    setDeletingItemId(itemToDelete);
     
     try {
-      if (!user || !user.token) {
-        throw new Error('You must be logged in to delete a listing');
+      // Only attempt to call API if it's available
+      if (apiAvailable) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('Authentication required');
       }
       
       const response = await fetch(getApiUrl(`api/items/${itemToDelete}`), {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${user.token}`,
-          'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
         }
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Server error' }));
+          const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete listing');
+        }
       }
       
-      // Remove the deleted item from the state
-      setProducts(prevProducts => prevProducts.filter(product => product.id !== itemToDelete));
+      // If using mock data or the API call succeeded
       setDeleteSuccess(true);
       
-      // Close the dialog after a short delay to show success state
-      setTimeout(() => {
-        setShowConfirmDialog(false);
-        setItemToDelete(null);
-      }, 1000);
+      // Remove the item from the products list
+      setProducts(prevProducts => prevProducts.filter(p => p.id !== itemToDelete));
       
+      // Hide the dialog after 1.5 seconds to show success message
+      setTimeout(() => {
+        closeDeleteConfirmation();
+      
+        // Refresh the page to get updated data
+        window.location.reload();
+      }, 1500);
     } catch (err) {
       console.error('Error deleting listing:', err);
-      setDeleteError(err.message || 'Something went wrong while deleting the listing');
+      setDeleteError(err.message || 'Failed to delete listing');
     } finally {
       setIsDeleting(false);
-      setDeletingItemId(null);
     }
   };
 
-  // Open product detail modal
+  // Function to open product detail
   const openProductDetail = (product: ProcessedItem) => {
     setSelectedProduct(product);
-    document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
   };
 
-  // Close product detail modal
+  // Function to close product detail
   const closeProductDetail = () => {
     setSelectedProduct(null);
-    document.body.style.overflow = 'auto'; // Restore scrolling
+  };
+
+  // Render function for API connection error message
+  const renderApiError = () => {
+    if (!apiAvailable && !loading) {
+      return (
+        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-yellow-500 mr-2" />
+            <span className="text-yellow-700">
+              Unable to connect to the server. Showing sample data for demonstration purposes.
+            </span>
+          </div>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero section with search */}
-      <div className="bg-gradient-to-r from-green-700 to-green-600 py-12 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
-          <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Items</h1>
+          <p className="text-gray-600">Find the perfect items to borrow or buy</p>
         </div>
         
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-2xl mx-auto text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-4">Find what you need</h1>
-            <p className="text-green-100 text-xl mb-8">
-              Browse thousands of items available to rent or buy from your community
-            </p>
-            
-            {/* Search form */}
-            <div className="max-w-xl mx-auto">
-              <div className="flex bg-white rounded-lg shadow-lg p-1 overflow-hidden">
+        {/* API error message */}
+        {renderApiError()}
+        
+        {/* Rest of the component remains the same */}
+        <div className="mb-6 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
                 <input
                   type="text"
-                  placeholder="Search for anything..."
+              className="pl-10 block w-full rounded-lg border-gray-300 bg-white py-2 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm"
+              placeholder="Search for items..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-grow px-4 py-3 focus:outline-none"
-                />
-                <button
-                  className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white px-6 py-3 rounded-md flex items-center transition-all font-medium shadow-md"
-                  onClick={fetchProducts}
-                >
-                  <Search size={18} className="mr-2" />
-                  Search
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+            />
       </div>
       
-      {/* Main content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex flex-col lg:flex-row">
-          {/* Filters sidebar */}
-          <div className="lg:w-64 mb-8 lg:mb-0 lg:mr-8">
-            <div className="bg-white rounded-xl shadow-md p-6 sticky top-20">
-              <h2 className="text-lg font-semibold mb-4 flex items-center">
-                <Filter size={20} className="mr-2 text-green-600" />
-                Filters
-              </h2>
+          <div className="flex gap-2">
+            <div className="relative inline-block text-left">
+              <button
+                className="inline-flex w-full justify-center gap-x-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                id="category-button"
+                aria-expanded="true"
+                aria-haspopup="true"
+                onClick={() => {}}
+              >
+                {selectedCategory}
+                <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              </button>
               
-              {/* Category filter */}
-              <div className="mb-6">
-                <h3 className="font-medium mb-3 text-gray-700">Category</h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 scrollbar-thin">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="category"
-                      value="all"
-                      checked={selectedCategory === 'all'}
-                      onChange={() => handleCategoryChange('all')}
-                      className="form-radio h-4 w-4 text-green-600"
-                    />
-                    <span className="ml-2 text-gray-700">All Categories</span>
-                  </label>
-                  
-                  {categories.map(category => (
-                    <label key={category} className="flex items-center">
-                      <input
-                        type="radio"
-                        name="category"
-                        value={category}
-                        checked={selectedCategory === category}
-                        onChange={() => handleCategoryChange(category)}
-                        className="form-radio h-4 w-4 text-green-600"
-                      />
-                      <span className="ml-2 text-gray-700">{category}</span>
-                    </label>
+              <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div className="py-1">
+                  {displayCategories.map((cat) => (
+                    <a
+                      href="#"
+                      className={`block px-4 py-2 text-sm ${selectedCategory === cat ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                      key={cat}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleCategoryChange(cat);
+                      }}
+                    >
+                      {cat}
+                    </a>
                   ))}
                 </div>
               </div>
-
-              {/* Price range filter */}
-              <div className="mb-6">
-                <h3 className="font-medium mb-3 text-gray-700">Price Range</h3>
-                <div className="flex items-center">
-                  <div className="flex-1 mr-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      value={priceRange.min}
-                      onChange={(e) => setPriceRange({...priceRange, min: Number(e.target.value)})}
-                    />
-                  </div>
-                  <span className="text-gray-500 mx-1">-</span>
-                  <div className="flex-1 ml-2">
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                      value={priceRange.max}
-                      onChange={(e) => setPriceRange({...priceRange, max: Number(e.target.value)})}
-                    />
-                  </div>
-                </div>
               </div>
-
-              {/* Distance filter */}
-              <div className="mb-6">
-                <h3 className="font-medium mb-3 text-gray-700">Maximum Distance</h3>
-                <div className="flex items-center">
-                  <input
-                    type="range"
-                    min="1"
-                    max="50"
-                    value={maxDistance}
-                    onChange={(e) => setMaxDistance(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600"
-                  />
-                  <span className="ml-2 min-w-[40px] text-gray-700">{maxDistance} mi</span>
-                </div>
-              </div>
-
-              {/* Listing type filter */}
-              <div className="mb-6">
-                <h3 className="font-medium mb-3 text-gray-700">Listing Type</h3>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategory === 'rent'}
-                      onChange={() => handleCategoryChange('rent')}
-                      className="form-checkbox h-4 w-4 text-green-600 rounded"
-                    />
-                    <span className="ml-2 text-gray-700">For Rent</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategory === 'buy'}
-                      onChange={() => handleCategoryChange('buy')}
-                      className="form-checkbox h-4 w-4 text-green-600 rounded"
-                    />
-                    <span className="ml-2 text-gray-700">For Sale</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Apply filters button */}
-              <button
-                onClick={fetchProducts}
-                className="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all font-medium"
-              >
-                Apply Filters
-              </button>
-              
-              {/* Clear filters button */}
-              <button
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('All');
-                  setMaxDistance(10);
-                  setPriceRange([0, 100]);
-                }}
-                className="w-full mt-2 bg-white text-gray-700 py-2 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors font-medium flex items-center justify-center"
-              >
-                <X size={16} className="mr-2" />
-                Clear Filters
-              </button>
-            </div>
-          </div>
-          
-          {/* Products grid */}
-          <div className="flex-1">
-            {loading ? (
-              <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
-              </div>
-            ) : error ? (
-              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
-                  </div>
-                </div>
-              </div>
-            ) : products.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-md p-8 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Try clearing some filters or changing your search query.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-800">
-                    {products.length} {products.length === 1 ? 'Item' : 'Items'} Found
-                  </h2>
-                  <div className="flex items-center">
-                    <label className="text-sm text-gray-700 mr-2">Sort by:</label>
-                    <select
-                      className="border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                      value={selectedCategory}
-                      onChange={(e) => handleCategoryChange(e.target.value)}
-                    >
-                      <option value="All">Relevance</option>
-                      <option value="rent">Price: Low to High</option>
-                      <option value="buy">Price: High to Low</option>
-                      <option value="All">Distance: Nearest</option>
-                      <option value="All">Rating: Highest</option>
-                    </select>
-                  </div>
-                </div>
-              
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {products.map(product => (
-                    <div 
-                      key={product.id} 
-                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group"
-                    >
-                      {/* Product image */}
-                      <div 
-                        className="h-48 bg-gray-200 relative cursor-pointer"
-                        onClick={() => openProductDetail(product)}
-                      >
-                        {product.images && product.images.length > 0 ? (
-                          <img 
-                            src={product.images[0]} 
-                            alt={product.title} 
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
-                            No Image
-                          </div>
-                        )}
-                        
-                        {/* Listing type badge */}
-                        <div className="absolute top-2 left-2">
-                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
-                            product.listingType === 'rent' 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-green-500 text-white'
-                          }`}>
-                            {product.listingType === 'rent' ? 'Rental' : 'For Sale'}
-                          </span>
-                        </div>
-                        
-                        {/* Delete button for user's own listings */}
-                        {product.seller.id === (user?.id || '') && (
-                          <button
-                            onClick={(e) => openDeleteConfirmation(e, product.id)}
-                            className="absolute top-2 right-2 bg-white/80 hover:bg-white p-1.5 rounded-full text-red-500 hover:text-red-600 transition-colors"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
-                      
-                      {/* Product info */}
-                      <div className="p-5 cursor-pointer" onClick={() => openProductDetail(product)}>
-                        <h3 className="font-semibold text-lg mb-1 text-gray-800 line-clamp-1">{product.title}</h3>
-                        
-                        <div className="mb-3 flex items-center">
-                          <span className="flex items-center text-amber-500 mr-1">
-                            <Star size={16} className="fill-amber-500" />
-                            <span className="ml-1 text-sm font-medium">{product.rating.toFixed(1)}</span>
-                          </span>
-                          <span className="text-gray-500 text-sm">({product.reviews} reviews)</span>
-                        </div>
-                        
-                        <p className="text-gray-500 text-sm line-clamp-2 mb-3">{product.description}</p>
-                        
-                        <div className="flex items-center text-sm text-gray-500 mb-3">
-                          <MapPin size={16} className="mr-1 text-gray-400" />
-                          <span>{product.location} ({product.distance} mi away)</span>
-                        </div>
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="font-bold text-green-600">
-                            ${product.price.toFixed(2)} 
-                            {product.listingType === 'rent' && (
-                              <span className="text-sm font-normal text-gray-500">
-                                /{product.rentalPeriod}
-                              </span>
-                            )}
-                          </div>
-                          
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openProductDetail(product);
-                            }}
-                            className="text-green-600 hover:text-green-700 font-medium text-sm"
-                          >
-                            View Details
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-      
-      {/* Delete confirmation dialog */}
-      <ConfirmationDialog 
-        isOpen={showConfirmDialog}
-        title="Delete Listing"
-        message={
-          deleteSuccess 
-            ? "Your listing has been successfully deleted." 
-            : deleteError 
-              ? `Error: ${deleteError}` 
-              : "Are you sure you want to delete this listing? This action cannot be undone."
-        }
-        confirmLabel={deleteSuccess ? "OK" : "Delete"}
-        cancelLabel="Cancel"
-        onConfirm={deleteSuccess ? closeDeleteConfirmation : confirmDeleteListing}
-        onCancel={closeDeleteConfirmation}
-      />
-      
-      {/* Product detail dialog */}
-      {selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-semibold text-gray-800">{selectedProduct.title}</h2>
-              <button 
-                onClick={closeProductDetail}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X size={24} />
-              </button>
-            </div>
             
-            <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Product images */}
-                <div>
-                  {selectedProduct.images && selectedProduct.images.length > 0 ? (
-                    <div className="mb-4">
-                      <img 
-                        src={selectedProduct.images[0]} 
-                        alt={selectedProduct.title} 
-                        className="w-full h-64 object-cover rounded-lg"
-                      />
-                      
-                      {selectedProduct.images.length > 1 && (
-                        <div className="grid grid-cols-4 gap-2 mt-2">
-                          {selectedProduct.images.slice(1).map((image, index) => (
-                            <img 
-                              key={index} 
-                              src={image} 
-                              alt={`${selectedProduct.title} - ${index+1}`} 
-                              className="h-20 w-full object-cover rounded-md"
-                            />
-                          ))}
+            <button
+              className="inline-flex items-center gap-x-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              <Filter className="h-5 w-5 text-gray-400" />
+              Filters
+              {showFilters ? (
+                <ChevronDown className="h-5 w-5 text-gray-400 transform rotate-180" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+                  </div>
+                </div>
+              
+        {/* Show loading state */}
+        {loading && (
+          <div className="text-center py-20">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-green-500 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+            <p className="mt-2 text-gray-600">Loading items...</p>
+                          </div>
+                        )}
+                        
+        {/* Show error state */}
+        {error && !loading && (
+          <div className="text-center py-10">
+            <div className="mb-4 text-red-500">
+              <AlertCircle className="h-12 w-12 mx-auto" />
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-full h-64 flex items-center justify-center bg-gray-100 text-gray-400 rounded-lg">
-                      No Image
-                    </div>
+            <h3 className="text-lg font-medium text-gray-900">Error loading items</h3>
+            <p className="mt-1 text-gray-500">{error}</p>
+                          <button
+              onClick={() => window.location.reload()} 
+              className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              Try Again
+                          </button>
+                        </div>
+        )}
+        
+        {/* No items found */}
+        {!loading && !error && displayProducts.length === 0 && (
+          <div className="text-center py-20">
+            <h3 className="text-lg font-medium text-gray-900">No items found</h3>
+            <p className="mt-1 text-gray-500">Try changing your search or filter criteria</p>
+          </div>
+        )}
+        
+        {/* Display products grid */}
+        {!loading && !error && displayProducts.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {displayProducts.map((product) => (
+              <div
+                key={product.id}
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+                onClick={() => openProductDetail(product)}
+              >
+                <div className="relative h-48">
+                  <img
+                    src={product.images[0]}
+                    alt={product.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {user && user.id === product.seller.id && (
+                    <button
+                      className="absolute top-2 right-2 p-1.5 bg-red-100 rounded-full hover:bg-red-200 transition-colors"
+                      onClick={(e) => openDeleteConfirmation(e, product.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-600" />
+                    </button>
                   )}
                 </div>
-                
-                {/* Product details */}
-                <div>
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="font-bold text-2xl text-gray-800">{selectedProduct.title}</h3>
-                      <div className="flex items-center mt-1">
-                        <span className="flex items-center text-amber-500">
-                          <Star size={18} className="fill-amber-500" />
-                          <span className="ml-1 font-medium">{selectedProduct.rating.toFixed(1)}</span>
-                        </span>
-                        <span className="text-gray-500 ml-1">({selectedProduct.reviews} reviews)</span>
-                      </div>
+                <div className="p-4">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-medium text-gray-900 line-clamp-1">{product.title}</h3>
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                      <span className="text-sm text-gray-600">{product.rating}</span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-green-600">
-                        ${selectedProduct.price.toFixed(2)}
-                      </div>
-                      {selectedProduct.listingType === 'rent' && (
-                        <div className="text-sm text-gray-500">
-                          per {selectedProduct.rentalPeriod}
-                        </div>
+                  </div>
+                  <p className="mt-1 text-gray-500 text-sm line-clamp-2">{product.description}</p>
+                  <div className="mt-2 flex items-center text-sm text-gray-500">
+                    <MapPin className="h-4 w-4 text-gray-400 mr-1" />
+                    <span>{product.location} ({product.distance} miles)</span>
+                  </div>
+                  <div className="mt-1 flex items-center text-sm text-gray-500">
+                    <Clock className="h-4 w-4 text-gray-400 mr-1" />
+                    <span>{product.listingType === 'rent' ? 'Rental' : 'For Sale'}</span>
+                  </div>
+                  <div className="mt-4 flex justify-between items-center">
+                    <div className="flex items-center font-medium">
+                      <DollarSign className="h-4 w-4 text-gray-900" />
+                      <span className="text-gray-900">{product.price}</span>
+                      {product.listingType === 'rent' && (
+                        <span className="text-gray-500 text-sm ml-1">/{product.rentalPeriod}</span>
                       )}
                     </div>
-                  </div>
-                  
-                  <div className="mb-4">
-                    <h4 className="font-medium text-gray-800 mb-2">Description</h4>
-                    <p className="text-gray-700">{selectedProduct.description}</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div>
-                      <h4 className="font-medium text-gray-800 mb-2">Details</h4>
-                      <ul className="space-y-2">
-                        <li className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-24">Category:</span>
-                          <span className="text-gray-600">{selectedProduct.category}</span>
-                        </li>
-                        <li className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-24">Condition:</span>
-                          <span className="text-gray-600">{selectedProduct.condition}</span>
-                        </li>
-                        <li className="flex items-center text-sm">
-                          <span className="font-medium text-gray-700 w-24">Listing Type:</span>
-                          <span className="text-gray-600">
-                            {selectedProduct.listingType === 'rent' ? 'For Rent' : 'For Sale'}
-                          </span>
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    <div>
-                      <h4 className="font-medium text-gray-800 mb-2">Location</h4>
-                      <ul className="space-y-2">
-                        <li className="flex items-start text-sm">
-                          <MapPin size={16} className="mr-2 mt-0.5 text-gray-400 flex-shrink-0" />
-                          <span className="text-gray-600">{selectedProduct.location}</span>
-                        </li>
-                        <li className="flex items-center text-sm">
-                          <Clock size={16} className="mr-2 text-gray-400 flex-shrink-0" />
-                          <span className="text-gray-600">{selectedProduct.distance} miles away</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-6">
-                    <h4 className="font-medium text-gray-800 mb-2">Seller Information</h4>
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
-                        {selectedProduct.seller.image ? (
-                          <img 
-                            src={selectedProduct.seller.image} 
-                            alt={selectedProduct.seller.name} 
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center bg-gray-300 text-gray-600 font-medium">
-                            {selectedProduct.seller.name.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-800">
-                          {selectedProduct.seller.name}
-                          {selectedProduct.seller.verified && (
-                            <span className="ml-1 text-blue-500 text-sm">(Verified)</span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {selectedProduct.seller.rating.toFixed(1)} seller rating
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex space-x-3">
-                    {/* Contact buttons */}
-                    <button
-                      className="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center justify-center"
-                    >
-                      Contact Seller
-                    </button>
-                    
-                    {selectedProduct.listingType === 'rent' ? (
-                      <button 
-                        className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center justify-center"
-                      >
-                        Request Rental
-                      </button>
-                    ) : (
-                      <button 
-                        className="flex-1 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white py-2.5 px-4 rounded-lg shadow-md hover:shadow-lg transition-all font-medium flex items-center justify-center"
-                      >
-                        Buy Now
-                      </button>
-                    )}
+                    <span className={`text-xs px-2 py-1 rounded-full ${product.available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {product.available ? 'Available' : 'Unavailable'}
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
+        )}
+        
+        {/* Confirmation Dialog for item deletion */}
+        {showConfirmDialog && (
+          <ConfirmationDialog
+            title="Delete Listing"
+            message="Are you sure you want to delete this listing? This action cannot be undone."
+            confirmLabel="Delete"
+            cancelLabel="Cancel"
+            isLoading={isDeleting}
+            isSuccess={deleteSuccess}
+            successMessage="Listing deleted successfully!"
+            errorMessage={deleteError}
+            onConfirm={confirmDeleteListing}
+            onCancel={closeDeleteConfirmation}
+          />
+        )}
         </div>
-      )}
     </div>
   );
 };

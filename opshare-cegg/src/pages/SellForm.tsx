@@ -12,26 +12,35 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+// Define the type for uploaded images
+interface UploadedImage {
+  id: string;
+  url: string;
+  file: File;
+}
+
 const SellForm = () => {
   const navigate = useNavigate();
-  const [uploadedImages, setUploadedImages] = useState([]);
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [listingType, setListingType] = useState('rent'); // 'rent' or 'sell'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const { user } = useUser();
   
   // Form refs
-  const titleRef = useRef(null);
-  const categoryRef = useRef(null);
-  const conditionRef = useRef(null);
-  const descriptionRef = useRef(null);
-  const locationRef = useRef(null);
-  const rentalPriceRef = useRef(null);
-  const rentalPeriodRef = useRef(null);
-  const securityDepositRef = useRef(null);
-  const salePriceRef = useRef(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const categoryRef = useRef<HTMLSelectElement>(null);
+  const conditionRef = useRef<HTMLSelectElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const locationRef = useRef<HTMLInputElement>(null);
+  const rentalPriceRef = useRef<HTMLInputElement>(null);
+  const rentalPeriodRef = useRef<HTMLSelectElement>(null);
+  const securityDepositRef = useRef<HTMLInputElement>(null);
+  const salePriceRef = useRef<HTMLInputElement>(null);
   
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    
     const files = Array.from(e.target.files);
     // Just for demo - in real app, you'd upload to server/storage
     const newImages = files.map(file => ({
@@ -43,7 +52,7 @@ const SellForm = () => {
     setUploadedImages([...uploadedImages, ...newImages]);
   };
   
-  const removeImage = (id) => {
+  const removeImage = (id: string) => {
     setUploadedImages(uploadedImages.filter(image => image.id !== id));
   };
   
@@ -114,6 +123,7 @@ const SellForm = () => {
           return;
         }
         formData.append('price', salePriceRef.current.value);
+        formData.append('salePrice', salePriceRef.current.value);
       }
       
       // Add image files
@@ -122,29 +132,64 @@ const SellForm = () => {
         setIsSubmitting(false);
         return;
       }
+
+      console.log(`Preparing to upload ${uploadedImages.length} images`);
       
-      uploadedImages.forEach(image => {
+      // Validate each image before uploading
+      const validImages = uploadedImages.filter(image => image.file instanceof File);
+      
+      if (validImages.length === 0) {
+        setError('No valid image files to upload');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      validImages.forEach((image, index) => {
+        console.log(`Adding image ${index + 1} to form data: ${image.file.name}, size: ${image.file.size} bytes`);
         formData.append('images', image.file);
       });
       
-      console.log('Submitting form data...');
+      // Log form data for debugging (note: can't directly log FormData contents)
+      console.log('Submitting form data with the following fields:');
+      for (const pair of formData.entries()) {
+        // Don't log the actual file objects, just their names
+        if (pair[0] === 'images' && pair[1] instanceof File) {
+          console.log(`${pair[0]}: ${pair[1].name} (${pair[1].size} bytes)`);
+        } else {
+          console.log(`${pair[0]}: ${pair[1]}`);
+        }
+      }
       
-      // Send data to server
+      // Important: Do NOT set 'Content-Type' header when sending FormData
+      // The browser will automatically set the correct content-type with boundary
       const response = await fetch(getApiUrl('api/items'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${user.token}`
         },
-        body: formData
+        body: formData // Do not stringify FormData
       });
       
-      const data = await response.json();
-      
       if (!response.ok) {
-        // Log the full error response for debugging
-        console.error('Server error response:', data);
-        throw new Error(data.message || 'Failed to create listing');
+        // Try to parse error response
+        const errorData = await response.text();
+        console.error('Server error response text:', errorData);
+        
+        let errorMessage = 'Failed to create listing';
+        try {
+          // Try to parse as JSON if possible
+          const jsonError = JSON.parse(errorData);
+          errorMessage = jsonError.message || jsonError.error || errorMessage;
+        } catch (parseError) {
+          // If not JSON, use text response
+          errorMessage = errorData || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
       }
+      
+      // Parse the successful response
+      const data = await response.json();
       
       // Log successful listing creation
       console.log('Listing created successfully:', data);

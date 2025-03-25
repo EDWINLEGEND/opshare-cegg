@@ -24,7 +24,26 @@ export const getApiUrl = (endpoint: string): string => {
   return `${apiBaseUrl}${cleanEndpoint}`;
 };
 
+// Helper to check if the API is available
+export const checkApiConnection = async (): Promise<boolean> => {
+  try {
+    const response = await fetch(`${apiBaseUrl}api/health`, { 
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Short timeout to avoid long waits
+      signal: AbortSignal.timeout(3000)
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('API connection check failed:', error);
+    return false;
+  }
+};
+
 export default {
   API_BASE_URL,
-  getApiUrl
+  getApiUrl,
+  checkApiConnection
 }; 
