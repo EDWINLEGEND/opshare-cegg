@@ -293,18 +293,23 @@ const Browse = () => {
   };
 
   // Function to open delete confirmation dialog
-  const openDeleteConfirmation = (e: React.MouseEvent, listingId: string) => {
+  const openDeleteConfirmation = (e: React.MouseEvent, itemId: string) => {
     e.stopPropagation(); // Prevent opening the product detail
-    setItemToDelete(listingId);
+    setItemToDelete(itemId);
     setShowConfirmDialog(true);
+    setDeleteSuccess(false);
+    setDeleteError('');
   };
 
   // Function to close delete confirmation dialog
   const closeDeleteConfirmation = () => {
     setShowConfirmDialog(false);
-    setItemToDelete(null);
-    setDeleteSuccess(false);
-    setDeleteError('');
+    // Wait a bit before resetting everything to allow animations to complete
+    setTimeout(() => {
+      setItemToDelete(null);
+      setDeleteSuccess(false);
+      setDeleteError('');
+    }, 300);
   };
 
   // Function to confirm deletion of a listing
@@ -316,38 +321,39 @@ const Browse = () => {
     try {
       // Only attempt to call API if it's available
       if (apiAvailable) {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || (user?.token || '');
         if (!token) {
           throw new Error('Authentication required');
-      }
-      
-      const response = await fetch(getApiUrl(`api/items/${itemToDelete}`), {
-        method: 'DELETE',
-        headers: {
+        }
+        
+        const response = await fetch(getApiUrl(`api/items/${itemToDelete}`), {
+          method: 'DELETE',
+          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
+          }
+        });
+        
+        if (!response.ok) {
           const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete listing');
+          throw new Error(errorData.message || 'Failed to delete listing');
         }
+      } else {
+        // Simulate API delay in offline mode
+        await new Promise(resolve => setTimeout(resolve, 800));
       }
       
-      // If using mock data or the API call succeeded
+      // If we're here, either API call succeeded or we're in offline mode
+      console.log(`Item ${itemToDelete} deleted successfully`);
       setDeleteSuccess(true);
       
       // Remove the item from the products list
       setProducts(prevProducts => prevProducts.filter(p => p.id !== itemToDelete));
       
-      // Hide the dialog after 1.5 seconds to show success message
+      // Hide the dialog after a delay to show success message
       setTimeout(() => {
         closeDeleteConfirmation();
-      
-        // Refresh the page to get updated data
-        window.location.reload();
-      }, 1500);
+      }, 2000);
     } catch (err) {
       console.error('Error deleting listing:', err);
       setDeleteError(err.message || 'Failed to delete listing');
@@ -381,6 +387,27 @@ const Browse = () => {
       );
     }
     return null;
+  };
+
+  // Render function for the delete confirmation dialog
+  const renderDeleteConfirmationDialog = () => {
+    if (!showConfirmDialog) return null;
+    
+    return (
+      <ConfirmationDialog
+        title="Delete Listing"
+        message="Are you sure you want to delete this listing? This action cannot be undone."
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isLoading={isDeleting}
+        isSuccess={deleteSuccess}
+        isError={!!deleteError}
+        successMessage="Listing deleted successfully!"
+        errorMessage={deleteError}
+        onConfirm={confirmDeleteListing}
+        onCancel={closeDeleteConfirmation}
+      />
+    );
   };
 
   return (
@@ -548,21 +575,7 @@ const Browse = () => {
           </div>
         )}
         
-        {/* Confirmation Dialog for item deletion */}
-        {showConfirmDialog && (
-          <ConfirmationDialog
-            title="Delete Listing"
-            message="Are you sure you want to delete this listing? This action cannot be undone."
-            confirmLabel="Delete"
-            cancelLabel="Cancel"
-            isLoading={isDeleting}
-            isSuccess={deleteSuccess}
-            successMessage="Listing deleted successfully!"
-            errorMessage={deleteError}
-            onConfirm={confirmDeleteListing}
-            onCancel={closeDeleteConfirmation}
-          />
-        )}
+        {renderDeleteConfirmationDialog()}
         </div>
     </div>
   );
