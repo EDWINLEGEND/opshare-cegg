@@ -155,6 +155,7 @@ const Browse = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState(category || 'All');
   const [showFilters, setShowFilters] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [maxDistance, setMaxDistance] = useState(10);
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [selectedProduct, setSelectedProduct] = useState<ProcessedItem | null>(null);
@@ -441,31 +442,34 @@ const Browse = () => {
               <button
                 className="inline-flex w-full justify-center gap-x-1.5 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                 id="category-button"
-                aria-expanded="true"
+                aria-expanded={showCategoryDropdown}
                 aria-haspopup="true"
-                onClick={() => {}}
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
               >
                 {selectedCategory}
                 <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
               </button>
               
-              <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                <div className="py-1">
-                  {displayCategories.map((cat) => (
-                    <a
-                      href="#"
-                      className={`block px-4 py-2 text-sm ${selectedCategory === cat ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-100'}`}
-                      key={cat}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleCategoryChange(cat);
-                      }}
-                    >
-                      {cat}
-                    </a>
-                  ))}
+              {showCategoryDropdown && (
+                <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <div className="py-1">
+                    {displayCategories.map((cat) => (
+                      <a
+                        href="#"
+                        className={`block px-4 py-2 text-sm ${selectedCategory === cat ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-100'}`}
+                        key={cat}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleCategoryChange(cat);
+                          setShowCategoryDropdown(false);
+                        }}
+                      >
+                        {cat}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               </div>
             
             <button
