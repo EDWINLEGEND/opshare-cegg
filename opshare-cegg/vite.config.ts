@@ -9,5 +9,17 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['zustand', 'zustand/middleware', 'uuid']
-  }
+  },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom']
+        }
+      }
+    }
+  },
+  base: '/'
 });
