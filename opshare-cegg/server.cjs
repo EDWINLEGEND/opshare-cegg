@@ -14,10 +14,32 @@ const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err);
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return res.status(400).json({ message: 'Invalid JSON' });
+  }
+  return res.status(500).json({ 
+    message: 'Internal server error',
+    error: process.env.NODE_ENV === 'production' ? 'An error occurred' : err.message 
+  });
+});
 
+// Configure CORS with specific origin
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || ['http://localhost:3000'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
 
-app.use(cors());
-app.use(express.json());
+app.use(cors(corsOptions));
+
+// Increase the limit for JSON parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Configure Cloudinary
 cloudinary.config({
@@ -53,11 +75,36 @@ const upload = multer({
 });
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  tlsAllowInvalidCertificates: true
-})
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log('MongoDB connection error:', err));
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      tlsAllowInvalidCertificates: true
+    });
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  }
+};
+
+// Only connect to MongoDB and start server if not in Vercel environment
+if (process.env.VERCEL_ENV) {
+  // In Vercel, connect for each request
+  app.use(async (req, res, next) => {
+    if (mongoose.connection.readyState !== 1) {
+      await connectDB();
+    }
+    next();
+  });
+} else {
+  // In development, connect once on startup
+  connectDB();
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
+
+// Export the Express app for Vercel
+module.exports = app;
 
 // Middleware for authentication
 const auth = async (req, res, next) => {
@@ -552,9 +599,3 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
   });
 }
-
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
