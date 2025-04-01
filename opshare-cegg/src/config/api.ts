@@ -32,6 +32,7 @@ export const checkApiConnection = async (): Promise<boolean> => {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // Include credentials in the request
       // Short timeout to avoid long waits
       signal: AbortSignal.timeout(3000)
     });

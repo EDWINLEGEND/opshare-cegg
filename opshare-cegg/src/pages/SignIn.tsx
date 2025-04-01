@@ -27,6 +27,7 @@ const SignIn = () => {
       const response = await fetch(getApiUrl('api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -38,11 +39,11 @@ const SignIn = () => {
       
       // Call the login function from context with the real user data
       login({
-        id: data.user.id || data.user._id, // Use either id or _id depending on what the API returns
+        id: data.user.id || data.user._id,
         name: `${data.user.firstName} ${data.user.lastName}`,
         email: data.user.email,
         token: data.token,
-        isAdmin: email.endsWith('@opshare.com'), // Set admin status based on email domain
+        isAdmin: email.endsWith('@opshare.com'),
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.user.firstName + ' ' + data.user.lastName)}&background=0D8ABC&color=fff`
       });
       
