@@ -4,7 +4,7 @@ let apiBaseUrl: string;
 // Determine the base URL based on environment
 if (import.meta.env.PROD) {
   // In production, use relative URL to the current origin
-  apiBaseUrl = '';
+  apiBaseUrl = 'https://opshare.vercel.app';
 } else {
   // In development, use localhost:5000
   apiBaseUrl = 'http://localhost:5000';
